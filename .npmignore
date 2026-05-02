@@ -1,0 +1,12 @@
+src/
+tests/
+.github/
+.cursor/
+*.tsbuildinfo
+tsconfig.json
+tsup.config.ts
+vitest.config.ts
+.eslintrc*
+.prettierrc*
+coverage/
+.mcp-diet/

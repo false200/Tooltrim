@@ -1,0 +1,87 @@
+{
+  "name": "mcp-diet",
+  "version": "0.1.0",
+  "description": "An open-source MCP context-diet proxy: aggregate N MCP servers, filter and shrink tool descriptions, and trace every call.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "proxy",
+    "gateway",
+    "llm",
+    "tools",
+    "context-window"
+  ],
+  "license": "MIT",
+  "author": "mcp-diet contributors",
+  "homepage": "https://github.com/mcp-diet/mcp-diet",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mcp-diet/mcp-diet.git"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "bin": {
+    "mcp-diet": "bin/mcp-diet"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "examples",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "bench": "tsx bench/run.ts",
+    "bench:preflight": "tsx bench/preflight.ts",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.0",
+    "@modelcontextprotocol/sdk": "^1.18.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.55.0",
+    "@opentelemetry/resources": "^1.30.0",
+    "@opentelemetry/sdk-node": "^0.55.0",
+    "@opentelemetry/semantic-conventions": "^1.28.0",
+    "cac": "^6.7.14",
+    "cosmiconfig": "^9.0.0",
+    "gpt-tokenizer": "^2.7.0",
+    "hono": "^4.6.0",
+    "micromatch": "^4.0.8",
+    "pino": "^9.5.0",
+    "prom-client": "^15.1.3",
+    "yaml": "^2.6.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^0.92.0",
+    "@types/micromatch": "^4.0.9",
+    "@types/node": "^22.10.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "eslint": "^9.16.0",
+    "prettier": "^3.4.2",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

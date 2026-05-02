@@ -1,0 +1,71 @@
+# mcp-diet — example configuration.
+#
+# Place this file at the root of your project as `mcp-diet.config.yaml`,
+# point your MCP client at `npx -y mcp-diet`, and the proxy will fan out
+# to every server below.
+
+servers:
+  # Each key becomes the namespace prefix in aggregated tool names,
+  # e.g. `github.create_issue`.
+  github:
+    transport: stdio
+    command: ["npx", "-y", "@modelcontextprotocol/server-github"]
+    env:
+      GITHUB_TOKEN: "${GITHUB_TOKEN}"
+
+  linear:
+    transport: http
+    url: https://mcp.linear.app/sse
+    auth: passthrough # forward the inbound Authorization header upstream
+
+  pg:
+    transport: stdio
+    command: ["uvx", "mcp-server-postgres", "--url", "${PG_URL}"]
+
+# Glob filters apply to the namespaced name. Allow first, then deny.
+filters:
+  allow:
+    - "github.*"
+    - "linear.create_*"
+    - "linear.list_*"
+    - "pg.query"
+  deny:
+    - "github.delete_*"
+    - "*.admin_*"
+
+# Description shrinking: deterministic rules in v0.1, LLM-assisted in v0.2.
+shrink:
+  mode: rules
+  maxDescriptionChars: 160
+  dedupeSchemas: true
+  cachePath: .mcp-diet/shrink-cache.json
+
+inbound:
+  stdio: true
+  http:
+    enabled: true
+    host: 127.0.0.1
+    port: 8787
+    path: /mcp
+    sessions: stateless
+
+observability:
+  trace:
+    sink: file
+    path: .mcp-diet/trace.ndjson
+  metrics:
+    prometheus:
+      enabled: true
+      port: 9464
+    otel:
+      enabled: false
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT}"
+  audit:
+    enabled: true
+    path: .mcp-diet/audit.ndjson
+
+policy:
+  defaultAuth: passthrough
+  blockedTools: []
+
+logLevel: info

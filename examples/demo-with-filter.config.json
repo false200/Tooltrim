@@ -1,0 +1,26 @@
+{
+  "servers": {
+    "echo1": {
+      "transport": "stdio",
+      "command": ["node", "node_modules/tsx/dist/cli.mjs", "tests/fixtures/echo-mcp-server/stdio.ts"],
+      "env": { "ECHO_SERVER_NAME": "echo1" }
+    },
+    "echo2": {
+      "transport": "stdio",
+      "command": ["node", "node_modules/tsx/dist/cli.mjs", "tests/fixtures/echo-mcp-server/stdio.ts"],
+      "env": { "ECHO_SERVER_NAME": "echo2" }
+    }
+  },
+  "filters": {
+    "allow": ["echo1.*"],
+    "deny": ["*.delete_*"]
+  },
+  "shrink": {
+    "mode": "rules",
+    "maxDescriptionChars": 50,
+    "cachePath": ".mcp-diet/shrink-cache.json"
+  },
+  "observability": { "trace": { "sink": "off" } },
+  "inbound": { "stdio": false, "http": { "enabled": false } },
+  "logLevel": "silent"
+}

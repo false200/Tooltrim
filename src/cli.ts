@@ -1,0 +1,125 @@
+import { cac } from "cac";
+import { loadConfig, validateConfig } from "./config/load.js";
+import { runProxy } from "./proxy.js";
+import { runMeasure } from "./cli/measure.js";
+import { runTraceTail } from "./cli/trace.js";
+import { configureLogger, getLogger } from "./logger.js";
+import { readFile } from "node:fs/promises";
+
+const VERSION = "0.1.0";
+
+async function main(): Promise<void> {
+  const cli = cac("mcp-diet");
+  cli.version(VERSION);
+  cli.help();
+
+  cli
+    .command("[]", "Start the proxy (default)")
+    .option("-c, --config <path>", "Path to mcp-diet.config.yaml")
+    .action(async (_input: string[], flags: { config?: string }) => {
+      await startProxyCmd(flags.config);
+    });
+
+  cli
+    .command("start", "Start the proxy")
+    .option("-c, --config <path>", "Path to mcp-diet.config.yaml")
+    .action(async (flags: { config?: string }) => {
+      await startProxyCmd(flags.config);
+    });
+
+  cli
+    .command("measure", "Connect to upstream servers, print bytes/tokens before vs after diet")
+    .option("-c, --config <path>", "Path to mcp-diet.config.yaml")
+    .option("--json", "Also emit JSON output after the table")
+    .action(async (flags: { config?: string; json?: boolean }) => {
+      await runMeasure({ configPath: flags.config, json: flags.json });
+    });
+
+  cli
+    .command("validate-config", "Validate the resolved config without starting the proxy")
+    .option("-c, --config <path>", "Path to mcp-diet.config.yaml")
+    .action(async (flags: { config?: string }) => {
+      try {
+        const { config, filepath } = await loadConfig({ configPath: flags.config });
+        process.stdout.write(`OK: ${filepath}\n`);
+        process.stdout.write(JSON.stringify(redactSecrets(config), null, 2) + "\n");
+      } catch (err) {
+        process.stderr.write(`${(err as Error).message}\n`);
+        process.exitCode = 1;
+      }
+    });
+
+  cli
+    .command("validate-file <path>", "Validate a raw config file (no env expansion)")
+    .action(async (filePath: string) => {
+      const text = await readFile(filePath, "utf8");
+      try {
+        const parsed = JSON.parse(text);
+        validateConfig(parsed);
+        process.stdout.write("OK\n");
+      } catch (err) {
+        process.stderr.write(`${(err as Error).message}\n`);
+        process.exitCode = 1;
+      }
+    });
+
+  cli
+    .command("trace tail", "Tail the trace NDJSON file in real time")
+    .option("-c, --config <path>", "Path to mcp-diet.config.yaml")
+    .option("-p, --path <path>", "Override trace file path")
+    .option("--no-follow", "Print existing content and exit")
+    .option("--no-pretty", "Print raw JSON")
+    .action(
+      async (flags: { config?: string; path?: string; follow?: boolean; pretty?: boolean }) => {
+        await runTraceTail({
+          configPath: flags.config,
+          path: flags.path,
+          follow: flags.follow,
+          pretty: flags.pretty,
+        });
+      },
+    );
+
+  cli.parse(process.argv, { run: false });
+  await cli.runMatchedCommand();
+}
+
+async function startProxyCmd(configPath?: string): Promise<void> {
+  const { config } = await loadConfig({ configPath });
+  const handle = await runProxy({ cfg: config });
+  const log = getLogger();
+
+  const shutdown = async (signal: string) => {
+    log.info({ signal }, "shutting down");
+    try {
+      await handle.close();
+    } finally {
+      process.exit(0);
+    }
+  };
+  process.on("SIGINT", () => void shutdown("SIGINT"));
+  process.on("SIGTERM", () => void shutdown("SIGTERM"));
+}
+
+function redactSecrets(value: unknown): unknown {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      if (/token|secret|password|apikey/i.test(k) && typeof v === "string") {
+        out[k] = v.length > 0 ? "***" : v;
+      } else {
+        out[k] = redactSecrets(v);
+      }
+    }
+    return out;
+  }
+  if (Array.isArray(value)) return value.map(redactSecrets);
+  return value;
+}
+
+main().catch((err) => {
+  configureLogger({ level: "error" });
+  getLogger().error({ err: (err as Error).message }, "mcp-diet failed");
+  process.stderr.write(`mcp-diet: ${(err as Error).message}\n`);
+  process.exit(1);
+});

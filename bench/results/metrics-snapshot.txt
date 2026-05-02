@@ -1,0 +1,11 @@
+mcp_diet_calls_total{upstream="everything",tool="everything.echo",ok="true",service="mcp-diet"} 51
+mcp_diet_call_duration_ms_bucket{le="25",service="mcp-diet",upstream="everything",tool="everything.echo",ok="true"} 19
+mcp_diet_call_duration_ms_bucket{le="100",service="mcp-diet",upstream="everything",tool="everything.echo",ok="true"} 51
+mcp_diet_call_duration_ms_bucket{le="250",service="mcp-diet",upstream="everything",tool="everything.echo",ok="true"} 51
+mcp_diet_call_duration_ms_sum{service="mcp-diet",upstream="everything",tool="everything.echo",ok="true"} 1647
+mcp_diet_call_duration_ms_count{service="mcp-diet",upstream="everything",tool="everything.echo",ok="true"} 51
+mcp_diet_upstream_up{upstream="github",service="mcp-diet"} 1
+mcp_diet_upstream_up{upstream="memory",service="mcp-diet"} 1
+mcp_diet_upstream_up{upstream="sequentialthinking",service="mcp-diet"} 1
+mcp_diet_upstream_up{upstream="filesystem",service="mcp-diet"} 1
+mcp_diet_upstream_up{upstream="everything",service="mcp-diet"} 1

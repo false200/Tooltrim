@@ -1,0 +1,117 @@
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import type { Server as McpServerLowLevel } from "@modelcontextprotocol/sdk/server/index.js";
+import type { McpDietConfig } from "../config/schema.js";
+import type { UpstreamManager } from "../upstream/manager.js";
+import type { AuditLogger } from "../observability/audit.js";
+import { unsafeDecodeBearer } from "../policy/oauth.js";
+import { child as childLogger } from "../logger.js";
+
+export interface InboundHttpHandle {
+  close: () => Promise<void>;
+}
+
+/**
+ * Inbound Streamable HTTP transport. Stateless by default per the 2026 MCP
+ * roadmap (no in-memory session affinity). When `inbound.http.sessions` is
+ * a Redis URL the v0.1 implementation still falls back to stateless and
+ * logs a TODO — the real session adapter ships in v0.2.
+ *
+ * In stateless mode the SDK requires both a fresh transport AND a fresh
+ * Server instance per request, so we accept a `createServer` factory
+ * (provided by the Aggregator) and call it on every POST.
+ */
+export async function startHttpServer(args: {
+  cfg: McpDietConfig;
+  createServer: () => McpServerLowLevel;
+  upstream: UpstreamManager;
+  audit: AuditLogger;
+}): Promise<InboundHttpHandle> {
+  const { cfg, createServer: createMcp, upstream } = args;
+  const log = childLogger({ component: "inbound-http" });
+  const { host, port, path: mcpPath, sessions } = cfg.inbound.http;
+
+  if (sessions !== "stateless") {
+    log.warn(
+      { sessions },
+      "stateful sessions are not yet implemented in v0.1; falling back to stateless behavior",
+    );
+  }
+
+  const handler = async (req: IncomingMessage, res: ServerResponse) => {
+    const url = new URL(req.url ?? "/", `http://${host}:${port}`);
+
+    if (url.pathname === "/healthz") {
+      const upstreams = [...upstream.connections.values()].map((c) => ({
+        id: c.id,
+        status: c.status,
+      }));
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ status: "ok", upstreams }));
+      return;
+    }
+
+    if (url.pathname !== mcpPath) {
+      res.statusCode = 404;
+      res.end("not found");
+      return;
+    }
+
+    // Stash inbound auth for the lifetime of this request so upstream HTTP
+    // pass-through can pick it up.
+    const auth = req.headers["authorization"];
+    if (typeof auth === "string") {
+      upstream.setInboundAuth({ authorization: auth });
+    }
+    const identity = unsafeDecodeBearer(typeof auth === "string" ? auth : undefined);
+
+    // Stateless: fresh transport AND fresh Server instance per request, per
+    // the Streamable HTTP spec and the official SDK example.
+    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+    const mcp = createMcp();
+    res.on("close", () => {
+      transport.close().catch(() => undefined);
+      mcp.close().catch(() => undefined);
+      upstream.clearInboundAuth();
+    });
+
+    try {
+      await mcp.connect(transport);
+      (req as IncomingMessage & { identity?: unknown }).identity = identity;
+      await transport.handleRequest(req, res);
+    } catch (err) {
+      log.warn({ err: (err as Error).message }, "HTTP request handling failed");
+      if (!res.headersSent) {
+        res.statusCode = 500;
+        res.end(JSON.stringify({ error: { code: -32603, message: "internal error" } }));
+      }
+    }
+  };
+
+  const httpServer = createServer((req, res) => {
+    handler(req, res).catch((err) => {
+      log.error({ err: (err as Error).message }, "unhandled inbound HTTP error");
+      if (!res.headersSent) {
+        res.statusCode = 500;
+        res.end();
+      }
+    });
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    httpServer.once("error", reject);
+    httpServer.listen(port, host, () => {
+      httpServer.off("error", reject);
+      resolve();
+    });
+  });
+  log.info({ host, port, path: mcpPath, sessions }, "inbound HTTP transport listening");
+
+  return {
+    close: () =>
+      new Promise<void>((resolve) => {
+        httpServer.close(() => resolve());
+      }),
+  };
+}
