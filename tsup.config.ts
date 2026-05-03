@@ -16,6 +16,6 @@ export default defineConfig({
   treeshake: true,
   minify: false,
   banner: {
-    js: "// LeanMCP — MCP proxy. https://github.com/leanmcp/leanmcp",
+    js: "// LeanMCP — MCP proxy. https://github.com/false200/LeanMCP",
   },
 });

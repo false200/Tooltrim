@@ -14,10 +14,10 @@
   ],
   "license": "MIT",
   "author": "LeanMCP contributors",
-  "homepage": "https://github.com/leanmcp/leanmcp",
+  "homepage": "https://github.com/false200/LeanMCP",
   "repository": {
     "type": "git",
-    "url": "https://github.com/leanmcp/leanmcp.git"
+    "url": "https://github.com/false200/LeanMCP.git"
   },
   "type": "module",
   "main": "./dist/index.js",
