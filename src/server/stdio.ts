@@ -4,7 +4,7 @@ import { child as childLogger } from "../logger.js";
 
 /**
  * Wire the proxy's `Server` instance to stdio. The MCP client (Cursor, Claude
- * Desktop, etc.) launches `npx mcp-diet` and JSON-RPC frames flow over
+ * Desktop, etc.) launches `npx leanmcp` and JSON-RPC frames flow over
  * stdin/stdout.
  *
  * Important: when we run as stdio inbound, all logs MUST go to stderr —

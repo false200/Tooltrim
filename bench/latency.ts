@@ -1,13 +1,13 @@
 /**
- * Phase 3: round-trip latency, direct vs through mcp-diet.
+ * Phase 3: round-trip latency, direct vs through LeanMCP.
  *
  * We compare four call paths over 100 samples each, after a short warmup:
  *   - direct  tools/list        (echo upstream, single Client)
  *   - direct  tools/call (echo) (everything.echo)
- *   - proxy   tools/list        (mcp-diet HTTP inbound)
+ *   - proxy   tools/list        (LeanMCP HTTP inbound)
  *   - proxy   tools/call (echo) (everything.echo via proxy)
  *
- * The deltas are what we care about: how much overhead does mcp-diet add?
+ * The deltas are what we care about: how much overhead does LeanMCP add?
  */
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
@@ -41,7 +41,7 @@ export interface LatencyReport {
 export async function runLatency(): Promise<LatencyReport> {
   configureLogger({ level: "warn", toStderr: true });
   const directs = await openDirectEverythingClient();
-  process.stderr.write("[latency] booting mcp-diet proxy...\n");
+  process.stderr.write("[latency] booting LeanMCP proxy...\n");
   const proxy = await bootProxy();
   const proxyClient = await openProxyClient();
 
@@ -121,7 +121,7 @@ async function openDirectEverythingClient(): Promise<{ client: Client }> {
     stderr: "pipe",
   });
   const client = new Client(
-    { name: "mcp-diet-bench-direct", version: "0.1.0" },
+    { name: "leanmcp-bench-direct", version: "0.1.0" },
     { capabilities: {} },
   );
   await client.connect(transport);
@@ -131,7 +131,7 @@ async function openDirectEverythingClient(): Promise<{ client: Client }> {
 async function openProxyClient(): Promise<Client> {
   const transport = new StreamableHTTPClientTransport(new URL(BENCH_HTTP_URL));
   const client = new Client(
-    { name: "mcp-diet-bench-proxy", version: "0.1.0" },
+    { name: "leanmcp-bench-proxy", version: "0.1.0" },
     { capabilities: {} },
   );
   await client.connect(transport);

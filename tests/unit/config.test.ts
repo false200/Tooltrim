@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { mcpDietConfigSchema } from "../../src/config/schema.js";
+import { leanMcpConfigSchema } from "../../src/config/schema.js";
 import { validateConfig } from "../../src/config/load.js";
 
 describe("config schema", () => {
   it("accepts a minimal stdio-only config", () => {
-    const cfg = mcpDietConfigSchema.parse({
+    const cfg = leanMcpConfigSchema.parse({
       servers: {
         x: { transport: "stdio", command: ["node", "x.js"] },
       },
@@ -17,7 +17,7 @@ describe("config schema", () => {
 
   it("rejects invalid server ids", () => {
     expect(() =>
-      mcpDietConfigSchema.parse({
+      leanMcpConfigSchema.parse({
         servers: { "weird id!": { transport: "stdio", command: ["x"] } },
       }),
     ).toThrow();
@@ -32,7 +32,7 @@ describe("config schema", () => {
   });
 
   it("accepts http transport with passthrough auth", () => {
-    const cfg = mcpDietConfigSchema.parse({
+    const cfg = leanMcpConfigSchema.parse({
       servers: {
         api: { transport: "http", url: "https://example.com/mcp", auth: "passthrough" },
       },
@@ -43,14 +43,14 @@ describe("config schema", () => {
 
   it("validates URL format for http", () => {
     expect(() =>
-      mcpDietConfigSchema.parse({
+      leanMcpConfigSchema.parse({
         servers: { api: { transport: "http", url: "not-a-url" } },
       }),
     ).toThrow();
   });
 
   it("normalizes empty optional sections via defaults", () => {
-    const cfg = mcpDietConfigSchema.parse({
+    const cfg = leanMcpConfigSchema.parse({
       servers: { x: { transport: "stdio", command: ["a"] } },
     });
     expect(cfg.filters.allow).toEqual([]);

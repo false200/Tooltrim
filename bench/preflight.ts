@@ -57,7 +57,7 @@ async function main(): Promise<void> {
       env: { ...(process.env as Record<string, string>), ...(u.env ?? {}) },
       stderr: "pipe",
     });
-    const client = new Client({ name: "mcp-diet-bench-preflight", version: "0.1.0" }, { capabilities: {} });
+    const client = new Client({ name: "leanmcp-bench-preflight", version: "0.1.0" }, { capabilities: {} });
 
     try {
       await client.connect(transport);

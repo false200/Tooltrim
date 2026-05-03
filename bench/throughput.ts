@@ -27,7 +27,7 @@ export interface ThroughputReport {
 
 export async function runThroughput(): Promise<ThroughputReport> {
   configureLogger({ level: "warn", toStderr: true });
-  process.stderr.write(`[throughput] booting mcp-diet proxy...\n`);
+  process.stderr.write(`[throughput] booting LeanMCP proxy...\n`);
   const proxy = await bootProxy();
   // Fresh client per "request" mirrors how multiple browser tabs / sidecar
   // agents would each open their own MCP HTTP session against the proxy.
@@ -101,7 +101,7 @@ async function bootProxy(): Promise<ProxyHandle> {
 async function openClient(): Promise<Client> {
   const transport = new StreamableHTTPClientTransport(new URL(BENCH_HTTP_URL));
   const client = new Client(
-    { name: "mcp-diet-bench-throughput", version: "0.1.0" },
+    { name: "leanmcp-bench-throughput", version: "0.1.0" },
     { capabilities: {} },
   );
   await client.connect(transport);
@@ -115,12 +115,12 @@ async function snapshotMetrics(): Promise<void> {
     throw new Error(`metrics endpoint returned ${res.status}`);
   }
   const body = await res.text();
-  // Only keep mcp_diet_* counters/gauges + tail of histogram buckets that
+  // Only keep lean_mcp_* counters/gauges + tail of histogram buckets that
   // matter for a report excerpt; drops 80% of the noise.
   const keep = body
     .split("\n")
     .filter((line) => {
-      if (!line.startsWith("mcp_diet_")) return false;
+      if (!line.startsWith("lean_mcp_")) return false;
       // Skip noisy bucket rows except for a couple of representative ones.
       if (line.includes("_bucket") && !/le="(5|25|100|250)"/.test(line)) return false;
       return true;

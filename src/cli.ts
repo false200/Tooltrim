@@ -9,27 +9,27 @@ import { readFile } from "node:fs/promises";
 const VERSION = "0.1.0";
 
 async function main(): Promise<void> {
-  const cli = cac("mcp-diet");
+  const cli = cac("leanmcp");
   cli.version(VERSION);
   cli.help();
 
   cli
     .command("[]", "Start the proxy (default)")
-    .option("-c, --config <path>", "Path to mcp-diet.config.yaml")
+    .option("-c, --config <path>", "Path to leanmcp.config.yaml")
     .action(async (_input: string[], flags: { config?: string }) => {
       await startProxyCmd(flags.config);
     });
 
   cli
     .command("start", "Start the proxy")
-    .option("-c, --config <path>", "Path to mcp-diet.config.yaml")
+    .option("-c, --config <path>", "Path to leanmcp.config.yaml")
     .action(async (flags: { config?: string }) => {
       await startProxyCmd(flags.config);
     });
 
   cli
-    .command("measure", "Connect to upstream servers, print bytes/tokens before vs after diet")
-    .option("-c, --config <path>", "Path to mcp-diet.config.yaml")
+    .command("measure", "Connect to upstream servers, print bytes/tokens before vs after LeanMCP")
+    .option("-c, --config <path>", "Path to leanmcp.config.yaml")
     .option("--json", "Also emit JSON output after the table")
     .action(async (flags: { config?: string; json?: boolean }) => {
       await runMeasure({ configPath: flags.config, json: flags.json });
@@ -37,7 +37,7 @@ async function main(): Promise<void> {
 
   cli
     .command("validate-config", "Validate the resolved config without starting the proxy")
-    .option("-c, --config <path>", "Path to mcp-diet.config.yaml")
+    .option("-c, --config <path>", "Path to leanmcp.config.yaml")
     .action(async (flags: { config?: string }) => {
       try {
         const { config, filepath } = await loadConfig({ configPath: flags.config });
@@ -65,7 +65,7 @@ async function main(): Promise<void> {
 
   cli
     .command("trace tail", "Tail the trace NDJSON file in real time")
-    .option("-c, --config <path>", "Path to mcp-diet.config.yaml")
+    .option("-c, --config <path>", "Path to leanmcp.config.yaml")
     .option("-p, --path <path>", "Override trace file path")
     .option("--no-follow", "Print existing content and exit")
     .option("--no-pretty", "Print raw JSON")
@@ -119,7 +119,7 @@ function redactSecrets(value: unknown): unknown {
 
 main().catch((err) => {
   configureLogger({ level: "error" });
-  getLogger().error({ err: (err as Error).message }, "mcp-diet failed");
-  process.stderr.write(`mcp-diet: ${(err as Error).message}\n`);
+  getLogger().error({ err: (err as Error).message }, "leanmcp failed");
+  process.stderr.write(`leanmcp: ${(err as Error).message}\n`);
   process.exit(1);
 });

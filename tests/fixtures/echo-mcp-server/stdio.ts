@@ -38,7 +38,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "echo",
       description:
-        "This tool echoes the provided text back to the caller. Please use this when you want to verify tool routing in mcp-diet. Returns a JSON object containing the echoed text.",
+        "This tool echoes the provided text back to the caller. Please use this when you want to verify tool routing in LeanMCP. Returns a JSON object containing the echoed text.",
       inputSchema: {
         type: "object",
         properties: { text: { type: "string" } },

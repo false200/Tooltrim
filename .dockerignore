@@ -1,0 +1,41 @@
+# Build context hygiene — keep the image small and reproducible.
+
+# VCS / IDE
+.git
+.gitattributes
+.github
+.gitignore
+.cursor
+.vscode
+.idea
+
+# Node / build outputs (we rebuild inside the image)
+node_modules
+dist
+coverage
+*.tsbuildinfo
+
+# Local runtime artifacts
+.leanmcp
+bench/sandbox
+bench/results/*.json
+bench/REPORT.md
+
+# Logs and editor cruft
+*.log
+.DS_Store
+
+# Local secrets — never bake these into a layer
+.env
+.env.local
+.env.*.local
+
+# Docker meta (avoid recursive copy)
+Dockerfile
+.dockerignore
+docker-compose.yml
+compose.yaml
+
+# Misc dev files we don't need at runtime
+docs
+CONTRIBUTING.md

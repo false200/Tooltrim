@@ -1,7 +1,7 @@
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import pino, { type Logger } from "pino";
-import type { McpDietConfig } from "../config/schema.js";
+import type { LeanMcpConfig } from "../config/schema.js";
 
 export interface TraceEvent {
   dir: "in" | "out";
@@ -61,7 +61,7 @@ export class Tracer {
     return new Tracer(pino(baseOptions, stream), opts.sink);
   }
 
-  static async fromConfig(cfg: McpDietConfig): Promise<Tracer> {
+  static async fromConfig(cfg: LeanMcpConfig): Promise<Tracer> {
     return Tracer.create({ sink: cfg.observability.trace.sink, path: cfg.observability.trace.path });
   }
 

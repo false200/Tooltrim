@@ -1,6 +1,6 @@
-# Contributing to mcp-diet
+# Contributing to LeanMCP
 
-Thanks for your interest! `mcp-diet` is a small project; a quick PR is usually faster than a long discussion.
+Thanks for your interest! LeanMCP is a small project; a quick PR is usually faster than a long discussion.
 
 ## Local setup
 
@@ -12,6 +12,14 @@ pnpm build
 ```
 
 `pnpm test` runs unit + integration suites. The integration tests spawn a local fixture MCP server over stdio, so they need Node 20+ but no network.
+
+## Enterprise benchmark (optional)
+
+The numbers in [`bench/REPORT.md`](bench/REPORT.md) / the README hero come from
+**`pnpm bench` run inside the Docker image** (`Dockerfile` → `leanmcp:dev`) so
+the baseline is **linux-x64** with a pinned Node, not whatever laptop ran it
+last. See [`docs/DOCKER.md`](docs/DOCKER.md) for `docker build` / `docker run`
+and how to mount `bench/` so `REPORT.md` updates on the host.
 
 ## Running the CLI in dev
 
@@ -40,8 +48,8 @@ Conventional commits are nice but not enforced. A short imperative summary is fi
 
 Please include:
 
-- the version of `mcp-diet` (`mcp-diet --version`),
-- the **redacted** config (use `mcp-diet validate-config` — it strips token-like fields),
-- a few lines of `.mcp-diet/trace.ndjson` if relevant.
+- the version of LeanMCP (`leanmcp --version`),
+- the **redacted** config (use `leanmcp validate-config` — it strips token-like fields),
+- a few lines of `.leanmcp/trace.ndjson` if relevant.
 
 By contributing, you agree your work is licensed under the same [MIT license](LICENSE) as the project.

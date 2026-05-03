@@ -1,32 +1,32 @@
-# mcp-diet enterprise benchmark
+# LeanMCP enterprise benchmark
 
 > Five real MCP servers, one ~63-tool fan-out, a Claude Sonnet 4.5 agent loop,
-> and the same task run twice — once direct, once through `mcp-diet`.
+> and the same task run twice — once direct, once through `LeanMCP`.
 > Numbers below come from `pnpm bench`; raw JSON is in `bench/results/`.
 
-- Run timestamp: `2026-05-02T19:03:55.281Z`
+- Run timestamp: `2026-05-03T17:36:40.633Z`
 - Platform: `win32-x64`
 - Node: `v24.12.0`
-- mcp-diet: `v0.1`
+- LeanMCP: `v0.1`
 
 ## TL;DR
 
 - **Token diet**: 63 tools · 10,401 tokens of metadata at baseline → 3 tools · 656 tokens with the `task` filter. **93.7% reduction.**
-- **Proxy overhead**: `tools/call` p50 2.6 ms vs 0.3 ms direct (Δ +2.3 ms p50, +6.4 ms p95).
-- **Concurrency**: 50 parallel `tools/call` finished in 118 ms — **422 ops/sec, 0 errors**.
-- **Real LLM money**: same Claude Sonnet 4.5 task = 54,720 input tokens direct vs 12,900 through mcp-diet (**−41,820, 76.4% cheaper**).
+- **Proxy overhead**: `tools/call` p50 2.1 ms vs 0.3 ms direct (Δ +1.9 ms p50, +2.8 ms p95).
+- **Concurrency**: 50 parallel `tools/call` finished in 101 ms — **495 ops/sec, 0 errors**.
+- **Real LLM money**: same Claude Sonnet 4.5 task = 54,714 input tokens direct vs 12,690 through LeanMCP (**−42,024, 76.8% cheaper**).
 
 ## 1. Setup under test
 
-Five MCP servers, all spawned over stdio, all reached through one `mcp-diet` Streamable HTTP inbound:
+Five MCP servers, all spawned over stdio, all reached through one `LeanMCP` Streamable HTTP inbound:
 
 | Upstream | Package | Server name | Version | Tools | Initialize ms |
 | --- | --- | --- | --- | --- | --- |
-| `everything` | `@modelcontextprotocol/server-everything` | mcp-servers/everything | `2.0.0` | 13 | 3270 |
-| `filesystem` | `@modelcontextprotocol/server-filesystem` | secure-filesystem-server | `0.2.0` | 14 | 2996 |
-| `memory` | `@modelcontextprotocol/server-memory` | memory-server | `0.6.3` | 9 | 1968 |
-| `sequentialthinking` | `@modelcontextprotocol/server-sequential-thinking` | sequential-thinking-server | `0.2.0` | 1 | 1934 |
-| `github` | `@modelcontextprotocol/server-github` | github-mcp-server | `0.6.2` | 26 | 2183 |
+| `everything` | `@modelcontextprotocol/server-everything` | mcp-servers/everything | `2.0.0` | 13 | 3002 |
+| `filesystem` | `@modelcontextprotocol/server-filesystem` | secure-filesystem-server | `0.2.0` | 14 | 2127 |
+| `memory` | `@modelcontextprotocol/server-memory` | memory-server | `0.6.3` | 9 | 1861 |
+| `sequentialthinking` | `@modelcontextprotocol/server-sequential-thinking` | sequential-thinking-server | `0.2.0` | 1 | 2338 |
+| `github` | `@modelcontextprotocol/server-github` | github-mcp-server | `0.6.2` | 26 | 1981 |
 
 Filter scenarios used in the measure phase:
 
@@ -93,13 +93,13 @@ Bytes and tokens are over the JSON-stringified tool list — the exact thing you
 
 | Mode | Op | p50 | p95 | p99 | max | mean |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| direct | `tools/list` | 1.4 ms | 2.8 ms | 8.2 ms | 8.2 ms | 1.6 ms |
-| direct | `tools/call` | 0.3 ms | 0.6 ms | 1.2 ms | 1.2 ms | 0.3 ms |
-| proxy | `tools/list` | 28.3 ms | 35.7 ms | 37.9 ms | 37.9 ms | 29.0 ms |
-| proxy | `tools/call` | 2.6 ms | 7.0 ms | 8.0 ms | 8.0 ms | 3.2 ms |
+| direct | `tools/list` | 1.5 ms | 3.1 ms | 4.3 ms | 4.3 ms | 1.7 ms |
+| direct | `tools/call` | 0.3 ms | 0.4 ms | 1.5 ms | 1.5 ms | 0.3 ms |
+| proxy | `tools/list` | 28.2 ms | 36.4 ms | 48.8 ms | 48.8 ms | 28.6 ms |
+| proxy | `tools/call` | 2.1 ms | 3.2 ms | 4.9 ms | 4.9 ms | 2.2 ms |
 
-- `tools/call` proxy overhead: **+2.3 ms p50, +6.4 ms p95** — basically the cost of one extra HTTP hop and a JSON-RPC re-serialization.
-- `tools/list` proxy overhead is higher (+26.9 ms p50) because the proxy fans out to all upstreams every list, while the "direct" baseline only hits one. That's an honest, expected delta — the proxy is doing strictly more work.
+- `tools/call` proxy overhead: **+1.9 ms p50, +2.8 ms p95** — basically the cost of one extra HTTP hop and a JSON-RPC re-serialization.
+- `tools/list` proxy overhead is higher (+26.7 ms p50) because the proxy fans out to all upstreams every list, while the "direct" baseline only hits one. That's an honest, expected delta — the proxy is doing strictly more work.
 
 ## 4. Parallel throughput
 
@@ -107,7 +107,7 @@ Bytes and tokens are over the JSON-stringified tool list — the exact thing you
 
 | Total time | Errors | Ops/sec | Per-call mean |
 | ---: | ---: | ---: | ---: |
-| 118.5 ms | 0 | 421.9 | 2.37 ms |
+| 101.0 ms | 0 | 494.9 | 2.02 ms |
 
 > 0 errors at 50 concurrent sessions on Streamable HTTP "stateless" mode validates the per-request `Server` factory pattern in `src/server/http.ts`.
 
@@ -127,53 +127,55 @@ Model: `claude-sonnet-4-5` · max turns: `8` · max tokens/turn: `1024`
 
 | Variant | Tools exposed | Tool-list bytes | Turns | Tool calls | Input tokens | Output tokens | Wall time | Final answer |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| direct | 63 | 37,769 | 4 | 3 | 54,720 | 585 | 21.8 s | yes |
-| proxy | 3 | 1,509 | 4 | 3 | 12,900 | 642 | 16.2 s | yes |
-| **Δ direct → proxy** | | | | +0 | **−41,820 (76.4%)** | | 5.6 s | |
+| direct | 63 | 37,769 | 4 | 3 | 54,714 | 624 | 18.3 s | yes |
+| proxy | 3 | 1,509 | 4 | 3 | 12,690 | 534 | 13.5 s | yes |
+| **Δ direct → proxy** | | | | +0 | **−42,024 (76.8%)** | | 4.8 s | |
 
 **Proxy run final answer (truncated):**
 
 ```text
 Perfect! Here are the three most prominently-listed reference servers from the Model Context Protocol servers repository:
 
-1. **Everything** - Reference/test server with prompts, resources, and tools
+1. **Everything** - Reference / test server with prompts, resources, and tools
+
 2. **Fetch** - Web content fetching and conversion for efficient LLM usage
+
 3. **Filesystem** - Secure file operations with configurable access controls
 
-These servers have been successfully stored in memory and retrieved, demonstrating the core MCP server implementations that showcase different capabilities of the Model Context Protocol.
+These three servers are listed first in the "Reference Servers" section of the README and represent core demonstration implementations of the MCP protocol's capabilities.
 ```
 
 ## 6. Trace + metrics evidence
 
-Last 10 lines of `.mcp-diet/trace.ndjson`:
+Last 10 lines of `.leanmcp/trace.ndjson`:
 
 ```ndjson
-{"level":"info","time":"2026-05-02T19:04:19.072Z","trace":true,"dir":"in","upstream":"everything","method":"tools/call","name":"everything.echo","ok":true,"durMs":13,"msg":"tools/call"}
-{"level":"info","time":"2026-05-02T19:04:19.072Z","trace":true,"dir":"in","upstream":"everything","method":"tools/call","name":"everything.echo","ok":true,"durMs":12,"msg":"tools/call"}
-{"level":"info","time":"2026-05-02T19:04:19.072Z","trace":true,"dir":"in","upstream":"everything","method":"tools/call","name":"everything.echo","ok":true,"durMs":11,"msg":"tools/call"}
-{"level":"info","time":"2026-05-02T19:04:19.072Z","trace":true,"dir":"in","upstream":"everything","method":"tools/call","name":"everything.echo","ok":true,"durMs":10,"msg":"tools/call"}
-{"level":"info","time":"2026-05-02T19:04:55.813Z","trace":true,"dir":"out","upstream":"github","method":"tools/call","name":"github.get_file_contents","msg":"tools/call"}
-{"level":"info","time":"2026-05-02T19:04:56.793Z","trace":true,"dir":"in","upstream":"github","method":"tools/call","name":"github.get_file_contents","ok":true,"durMs":980,"msg":"tools/call"}
-{"level":"info","time":"2026-05-02T19:05:02.878Z","trace":true,"dir":"out","upstream":"memory","method":"tools/call","name":"memory.create_entities","msg":"tools/call"}
-{"level":"info","time":"2026-05-02T19:05:02.886Z","trace":true,"dir":"in","upstream":"memory","method":"tools/call","name":"memory.create_entities","ok":true,"durMs":8,"msg":"tools/call"}
-{"level":"info","time":"2026-05-02T19:05:05.499Z","trace":true,"dir":"out","upstream":"memory","method":"tools/call","name":"memory.open_nodes","msg":"tools/call"}
-{"level":"info","time":"2026-05-02T19:05:05.501Z","trace":true,"dir":"in","upstream":"memory","method":"tools/call","name":"memory.open_nodes","ok":true,"durMs":2,"msg":"tools/call"}
+{"level":"info","time":"2026-05-03T17:37:01.058Z","trace":true,"dir":"in","upstream":"everything","method":"tools/call","name":"everything.echo","ok":true,"durMs":22,"msg":"tools/call"}
+{"level":"info","time":"2026-05-03T17:37:01.058Z","trace":true,"dir":"in","upstream":"everything","method":"tools/call","name":"everything.echo","ok":true,"durMs":22,"msg":"tools/call"}
+{"level":"info","time":"2026-05-03T17:37:01.058Z","trace":true,"dir":"in","upstream":"everything","method":"tools/call","name":"everything.echo","ok":true,"durMs":21,"msg":"tools/call"}
+{"level":"info","time":"2026-05-03T17:37:01.058Z","trace":true,"dir":"in","upstream":"everything","method":"tools/call","name":"everything.echo","ok":true,"durMs":20,"msg":"tools/call"}
+{"level":"info","time":"2026-05-03T17:37:01.058Z","trace":true,"dir":"in","upstream":"everything","method":"tools/call","name":"everything.echo","ok":true,"durMs":19,"msg":"tools/call"}
+{"level":"info","time":"2026-05-03T17:37:01.058Z","trace":true,"dir":"in","upstream":"everything","method":"tools/call","name":"everything.echo","ok":true,"durMs":18,"msg":"tools/call"}
+{"level":"info","time":"2026-05-03T17:37:01.058Z","trace":true,"dir":"in","upstream":"everything","method":"tools/call","name":"everything.echo","ok":true,"durMs":17,"msg":"tools/call"}
+{"level":"info","time":"2026-05-03T17:37:01.058Z","trace":true,"dir":"in","upstream":"everything","method":"tools/call","name":"everything.echo","ok":true,"durMs":15,"msg":"tools/call"}
+{"level":"info","time":"2026-05-03T17:37:01.058Z","trace":true,"dir":"in","upstream":"everything","method":"tools/call","name":"everything.echo","ok":true,"durMs":14,"msg":"tools/call"}
+{"level":"info","time":"2026-05-03T17:37:01.058Z","trace":true,"dir":"in","upstream":"everything","method":"tools/call","name":"everything.echo","ok":true,"durMs":14,"msg":"tools/call"}
 ```
 
 Live `/metrics` excerpt scraped during the throughput phase:
 
 ```text
-mcp_diet_calls_total{upstream="everything",tool="everything.echo",ok="true",service="mcp-diet"} 51
-mcp_diet_call_duration_ms_bucket{le="25",service="mcp-diet",upstream="everything",tool="everything.echo",ok="true"} 19
-mcp_diet_call_duration_ms_bucket{le="100",service="mcp-diet",upstream="everything",tool="everything.echo",ok="true"} 51
-mcp_diet_call_duration_ms_bucket{le="250",service="mcp-diet",upstream="everything",tool="everything.echo",ok="true"} 51
-mcp_diet_call_duration_ms_sum{service="mcp-diet",upstream="everything",tool="everything.echo",ok="true"} 1647
-mcp_diet_call_duration_ms_count{service="mcp-diet",upstream="everything",tool="everything.echo",ok="true"} 51
-mcp_diet_upstream_up{upstream="github",service="mcp-diet"} 1
-mcp_diet_upstream_up{upstream="memory",service="mcp-diet"} 1
-mcp_diet_upstream_up{upstream="sequentialthinking",service="mcp-diet"} 1
-mcp_diet_upstream_up{upstream="filesystem",service="mcp-diet"} 1
-mcp_diet_upstream_up{upstream="everything",service="mcp-diet"} 1
+lean_mcp_calls_total{upstream="everything",tool="everything.echo",ok="true",service="leanmcp"} 51
+lean_mcp_call_duration_ms_bucket{le="25",service="leanmcp",upstream="everything",tool="everything.echo",ok="true"} 16
+lean_mcp_call_duration_ms_bucket{le="100",service="leanmcp",upstream="everything",tool="everything.echo",ok="true"} 51
+lean_mcp_call_duration_ms_bucket{le="250",service="leanmcp",upstream="everything",tool="everything.echo",ok="true"} 51
+lean_mcp_call_duration_ms_sum{service="leanmcp",upstream="everything",tool="everything.echo",ok="true"} 1629
+lean_mcp_call_duration_ms_count{service="leanmcp",upstream="everything",tool="everything.echo",ok="true"} 51
+lean_mcp_upstream_up{upstream="github",service="leanmcp"} 1
+lean_mcp_upstream_up{upstream="memory",service="leanmcp"} 1
+lean_mcp_upstream_up{upstream="sequentialthinking",service="leanmcp"} 1
+lean_mcp_upstream_up{upstream="everything",service="leanmcp"} 1
+lean_mcp_upstream_up{upstream="filesystem",service="leanmcp"} 1
 ```
 
 > The trace.ndjson and `/metrics` endpoint are hot during the bench because `examples/benchmark.config.yaml` enables `observability.trace`, `observability.metrics.prometheus`, and `observability.audit`. They're real, not theoretical.

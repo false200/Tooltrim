@@ -1,6 +1,6 @@
 import { Counter, Gauge, Histogram, Registry, collectDefaultMetrics } from "prom-client";
 import { createServer, type Server as HttpServer } from "node:http";
-import type { McpDietConfig } from "../config/schema.js";
+import type { LeanMcpConfig } from "../config/schema.js";
 import { child as childLogger } from "../logger.js";
 
 export interface MetricsServerHandle {
@@ -21,26 +21,26 @@ export class MetricsRecorder {
 
   constructor(registry: Registry) {
     this.callsTotal = new Counter({
-      name: "mcp_diet_calls_total",
-      help: "Total tool/resource/prompt calls forwarded by mcp-diet.",
+      name: "lean_mcp_calls_total",
+      help: "Total tool/resource/prompt calls forwarded by LeanMCP.",
       labelNames: ["upstream", "tool", "ok"],
       registers: [registry],
     });
     this.callDuration = new Histogram({
-      name: "mcp_diet_call_duration_ms",
+      name: "lean_mcp_call_duration_ms",
       help: "Tool call duration in milliseconds.",
       labelNames: ["upstream", "tool", "ok"],
       buckets: [10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10_000],
       registers: [registry],
     });
     this.tokensSavedGauge = new Gauge({
-      name: "mcp_diet_tokens_saved",
+      name: "lean_mcp_tokens_saved",
       help: "Tokens removed from tool listings by filtering and shrinking, since startup.",
       labelNames: ["upstream"],
       registers: [registry],
     });
     this.upstreamUp = new Gauge({
-      name: "mcp_diet_upstream_up",
+      name: "lean_mcp_upstream_up",
       help: "1 if the upstream MCP server is currently connected.",
       labelNames: ["upstream"],
       registers: [registry],
@@ -67,10 +67,10 @@ export class MetricsRecorder {
  * pass into the aggregator. If Prometheus is disabled, returns a no-op
  * recorder bound to a private registry.
  */
-export async function startMetrics(cfg: McpDietConfig): Promise<MetricsServerHandle> {
+export async function startMetrics(cfg: LeanMcpConfig): Promise<MetricsServerHandle> {
   const log = childLogger({ component: "metrics" });
   const registry = new Registry();
-  registry.setDefaultLabels({ service: "mcp-diet" });
+  registry.setDefaultLabels({ service: "leanmcp" });
   collectDefaultMetrics({ register: registry });
   const recorder = new MetricsRecorder(registry);
 

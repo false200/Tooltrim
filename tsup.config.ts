@@ -16,6 +16,6 @@ export default defineConfig({
   treeshake: true,
   minify: false,
   banner: {
-    js: "// mcp-diet — MCP context-diet proxy. https://github.com/mcp-diet/mcp-diet",
+    js: "// LeanMCP — MCP proxy. https://github.com/leanmcp/leanmcp",
   },
 });

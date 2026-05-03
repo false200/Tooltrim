@@ -4,14 +4,14 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import type { Logger } from "pino";
 import type {
   HttpServerConfig,
-  McpDietConfig,
+  LeanMcpConfig,
   ServerConfig,
   StdioServerConfig,
 } from "../config/schema.js";
 import { child as childLogger } from "../logger.js";
 import type { UpstreamConnection, UpstreamStatus } from "./types.js";
 
-const PROXY_CLIENT_INFO = { name: "mcp-diet", version: "0.1.0" };
+const PROXY_CLIENT_INFO = { name: "leanmcp", version: "0.1.0" };
 
 interface AuthHeaders {
   /** Inbound Authorization header from the current MCP client request. */
@@ -26,7 +26,7 @@ interface AuthHeaders {
 export type StatusListener = (id: string, status: UpstreamStatus) => void;
 
 export class UpstreamManager {
-  private readonly cfg: McpDietConfig;
+  private readonly cfg: LeanMcpConfig;
   private readonly log: Logger;
   private readonly conns = new Map<string, UpstreamConnection>();
   private readonly restartCounts = new Map<string, number>();
@@ -37,7 +37,7 @@ export class UpstreamManager {
   /** Per-async-context auth headers (Authorization: ...) to forward upstream. */
   private currentAuth: AuthHeaders = {};
 
-  constructor(cfg: McpDietConfig) {
+  constructor(cfg: LeanMcpConfig) {
     this.cfg = cfg;
     this.log = childLogger({ component: "upstream" });
   }

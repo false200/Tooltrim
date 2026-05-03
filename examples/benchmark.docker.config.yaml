@@ -1,15 +1,15 @@
-# LeanMCP benchmark config
+# LeanMCP benchmark config (Docker variant)
 #
-# This is the proxy config the bench harness boots before running each phase.
-# Five real upstream MCP servers; HTTP inbound only so the bench harness can
-# talk to it as a regular MCP client; trace + Prometheus + audit on so the
-# REPORT.md has real evidence to cite.
+# Same as examples/benchmark.config.yaml, but the inbound HTTP and Prometheus
+# exporters bind to 0.0.0.0 so a `docker run -p ...` port-forward can reach
+# them from the host. When running on the host directly, prefer the loopback
+# config (examples/benchmark.config.yaml).
 #
 # Required env vars:
 #   GITHUB_TOKEN     - read-only GitHub Personal Access Token (public_repo is enough)
 #
 # Optional env vars:
-#   BENCH_FS_ROOT    - directory the filesystem upstream may read (defaults to ./bench/sandbox)
+#   BENCH_FS_ROOT    - directory the filesystem upstream may read (defaults to /app/bench/sandbox inside the image)
 #   BENCH_HTTP_PORT  - inbound HTTP port (defaults to 8799)
 
 servers:
@@ -23,7 +23,7 @@ servers:
       - "npx"
       - "-y"
       - "@modelcontextprotocol/server-filesystem"
-      - "${BENCH_FS_ROOT:-./bench/sandbox}"
+      - "${BENCH_FS_ROOT:-/app/bench/sandbox}"
 
   memory:
     transport: stdio
@@ -39,8 +39,6 @@ servers:
     env:
       GITHUB_PERSONAL_ACCESS_TOKEN: "${GITHUB_TOKEN}"
 
-# The bench overrides the filter at runtime by mutating the loaded config; the
-# values below are the "common" scenario used for regular `leanmcp start`.
 filters:
   allow:
     - "everything.*"
@@ -64,7 +62,7 @@ inbound:
   stdio: false
   http:
     enabled: true
-    host: 127.0.0.1
+    host: 0.0.0.0
     port: 8799
     path: /mcp
     sessions: stateless
@@ -76,7 +74,7 @@ observability:
   metrics:
     prometheus:
       enabled: true
-      host: 127.0.0.1
+      host: 0.0.0.0
       port: 9464
   audit:
     enabled: true

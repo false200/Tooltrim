@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { McpDietConfig } from "../config/schema.js";
+import type { LeanMcpConfig } from "../config/schema.js";
 
 export interface ShrinkOptions {
   mode: "off" | "rules" | "llm";
@@ -72,7 +72,7 @@ export class Shrinker {
     this.opts = opts;
   }
 
-  static fromConfig(cfg: McpDietConfig): Shrinker {
+  static fromConfig(cfg: LeanMcpConfig): Shrinker {
     return new Shrinker({
       mode: cfg.shrink.mode,
       maxDescriptionChars: cfg.shrink.maxDescriptionChars,

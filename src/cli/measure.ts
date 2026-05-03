@@ -8,11 +8,11 @@ import { loadConfig } from "../config/load.js";
 interface ServerRow {
   server: string;
   toolsRaw: number;
-  toolsDiet: number;
+  toolsLean: number;
   bytesRaw: number;
-  bytesDiet: number;
+  bytesLean: number;
   tokensRaw: number;
-  tokensDiet: number;
+  tokensLean: number;
 }
 
 export interface MeasureOptions {
@@ -40,11 +40,11 @@ export async function runMeasure(opts: MeasureOptions = {}): Promise<void> {
         rows.push({
           server: id,
           toolsRaw: 0,
-          toolsDiet: 0,
+          toolsLean: 0,
           bytesRaw: 0,
-          bytesDiet: 0,
+          bytesLean: 0,
           tokensRaw: 0,
-          tokensDiet: 0,
+          tokensLean: 0,
         });
         continue;
       }
@@ -58,7 +58,7 @@ export async function runMeasure(opts: MeasureOptions = {}): Promise<void> {
       const cfgServer = config.servers[id];
       const perToolMax =
         cfgServer && "shrink" in cfgServer ? cfgServer.shrink?.maxDescriptionChars : undefined;
-      const dieted = filtered.map((t) =>
+      const shrunk = filtered.map((t) =>
         shrinker.shrinkTool(
           {
             name: t.name,
@@ -71,16 +71,16 @@ export async function runMeasure(opts: MeasureOptions = {}): Promise<void> {
       );
 
       const rawJson = JSON.stringify(raw);
-      const dietJson = JSON.stringify(dieted);
+      const leanJson = JSON.stringify(shrunk);
 
       rows.push({
         server: id,
         toolsRaw: raw.length,
-        toolsDiet: dieted.length,
+        toolsLean: shrunk.length,
         bytesRaw: byteLength(rawJson),
-        bytesDiet: byteLength(dietJson),
+        bytesLean: byteLength(leanJson),
         tokensRaw: countTokens(rawJson),
-        tokensDiet: countTokens(dietJson),
+        tokensLean: countTokens(leanJson),
       });
     }
   } finally {
@@ -98,32 +98,32 @@ function printTable(rows: ServerRow[]): void {
   const total: ServerRow = {
     server: "TOTAL",
     toolsRaw: rows.reduce((a, r) => a + r.toolsRaw, 0),
-    toolsDiet: rows.reduce((a, r) => a + r.toolsDiet, 0),
+    toolsLean: rows.reduce((a, r) => a + r.toolsLean, 0),
     bytesRaw: rows.reduce((a, r) => a + r.bytesRaw, 0),
-    bytesDiet: rows.reduce((a, r) => a + r.bytesDiet, 0),
+    bytesLean: rows.reduce((a, r) => a + r.bytesLean, 0),
     tokensRaw: rows.reduce((a, r) => a + r.tokensRaw, 0),
-    tokensDiet: rows.reduce((a, r) => a + r.tokensDiet, 0),
+    tokensLean: rows.reduce((a, r) => a + r.tokensLean, 0),
   };
   const all = [...rows, total];
 
   const headers = [
     "Server",
-    "Tools (raw → diet)",
+    "Tools (raw → lean)",
     "Bytes (raw)",
-    "Bytes (diet)",
+    "Bytes (lean)",
     "Tokens (raw)",
-    "Tokens (diet)",
+    "Tokens (lean)",
     "Saved",
   ];
   const lines = all.map((r) => {
-    const saved = r.tokensRaw === 0 ? 0 : ((r.tokensRaw - r.tokensDiet) / r.tokensRaw) * 100;
+    const saved = r.tokensRaw === 0 ? 0 : ((r.tokensRaw - r.tokensLean) / r.tokensRaw) * 100;
     return [
       r.server,
-      `${r.toolsRaw} → ${r.toolsDiet}`,
+      `${r.toolsRaw} → ${r.toolsLean}`,
       r.bytesRaw.toLocaleString("en-US"),
-      r.bytesDiet.toLocaleString("en-US"),
+      r.bytesLean.toLocaleString("en-US"),
       r.tokensRaw.toLocaleString("en-US"),
-      r.tokensDiet.toLocaleString("en-US"),
+      r.tokensLean.toLocaleString("en-US"),
       `${saved.toFixed(1)}%`,
     ];
   });

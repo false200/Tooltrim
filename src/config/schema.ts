@@ -68,7 +68,7 @@ const shrinkSchema = z
     mode: z.enum(["off", "rules", "llm"]).default("rules"),
     maxDescriptionChars: z.number().int().min(20).default(160),
     dedupeSchemas: z.boolean().default(true),
-    cachePath: z.string().default(".mcp-diet/shrink-cache.json"),
+    cachePath: z.string().default(".leanmcp/shrink-cache.json"),
   })
   .default({});
 
@@ -92,7 +92,7 @@ const observabilitySchema = z
     trace: z
       .object({
         sink: z.enum(["off", "stderr", "file", "otlp"]).default("stderr"),
-        path: z.string().default(".mcp-diet/trace.ndjson"),
+        path: z.string().default(".leanmcp/trace.ndjson"),
       })
       .default({}),
     metrics: z
@@ -116,7 +116,7 @@ const observabilitySchema = z
     audit: z
       .object({
         enabled: z.boolean().default(false),
-        path: z.string().default(".mcp-diet/audit.ndjson"),
+        path: z.string().default(".leanmcp/audit.ndjson"),
       })
       .default({}),
   })
@@ -131,7 +131,7 @@ const policySchema = z
   })
   .default({});
 
-export const mcpDietConfigSchema = z.object({
+export const leanMcpConfigSchema = z.object({
   /** Map of upstream server id -> server config. Keys become the namespace prefix. */
   servers: z.record(z.string().regex(/^[a-z0-9_-]+$/i, {
     message: "server id must match [a-z0-9_-]+",
@@ -149,4 +149,4 @@ export const mcpDietConfigSchema = z.object({
 export type StdioServerConfig = z.infer<typeof stdioServerSchema>;
 export type HttpServerConfig = z.infer<typeof httpServerSchema>;
 export type ServerConfig = z.infer<typeof serverConfigSchema>;
-export type McpDietConfig = z.infer<typeof mcpDietConfigSchema>;
+export type LeanMcpConfig = z.infer<typeof leanMcpConfigSchema>;

@@ -1,8 +1,8 @@
 import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
-import type { McpDietConfig } from "../src/config/schema.js";
-import { mcpDietConfigSchema } from "../src/config/schema.js";
+import type { LeanMcpConfig } from "../src/config/schema.js";
+import { leanMcpConfigSchema } from "../src/config/schema.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const requireFromHere = createRequire(import.meta.url);
@@ -22,7 +22,7 @@ export function echoStdioConfig(serverId: string, env: Record<string, string> = 
 }
 
 /**
- * Build a fully-populated McpDietConfig for tests. The Zod parse fills all the
+ * Build a fully-populated LeanMcpConfig for tests. The Zod parse fills all the
  * default values so we don't need to repeat them everywhere.
  */
 export function buildTestConfig(partial: {
@@ -30,8 +30,8 @@ export function buildTestConfig(partial: {
   filters?: { allow?: string[]; deny?: string[] };
   shrink?: { mode?: "off" | "rules" | "llm"; maxDescriptionChars?: number };
   inboundHttp?: boolean;
-}): McpDietConfig {
-  return mcpDietConfigSchema.parse({
+}): LeanMcpConfig {
+  return leanMcpConfigSchema.parse({
     servers: partial.servers,
     filters: partial.filters ?? {},
     shrink: partial.shrink ?? { mode: "rules", cachePath: "" },

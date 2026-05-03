@@ -1,6 +1,6 @@
 import { mkdir, appendFile } from "node:fs/promises";
 import path from "node:path";
-import type { McpDietConfig } from "../config/schema.js";
+import type { LeanMcpConfig } from "../config/schema.js";
 
 export interface AuditEvent {
   ts?: string;
@@ -30,7 +30,7 @@ export class AuditLogger {
     this.filePath = filePath;
   }
 
-  static fromConfig(cfg: McpDietConfig): AuditLogger {
+  static fromConfig(cfg: LeanMcpConfig): AuditLogger {
     return new AuditLogger(cfg.observability.audit.enabled, cfg.observability.audit.path);
   }
 

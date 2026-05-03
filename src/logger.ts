@@ -13,7 +13,7 @@ let rootLogger: Logger | undefined;
 export function configureLogger(cfg: LoggerConfig = {}): Logger {
   const options: LoggerOptions = {
     level: cfg.level ?? (process.env.MCP_DIET_LOG_LEVEL as LogLevel) ?? "info",
-    base: { name: "mcp-diet" },
+    base: { name: "leanmcp" },
     timestamp: pino.stdTimeFunctions.isoTime,
   };
   const stream: DestinationStream | undefined = cfg.toStderr

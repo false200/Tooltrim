@@ -13,12 +13,12 @@ const tsxCli = requireFromHere.resolve("tsx/cli");
 const cliEntry = path.resolve(root, "src", "cli.ts");
 const echoStdio = path.resolve(root, "tests", "fixtures", "echo-mcp-server", "stdio.ts");
 
-describe("mcp-diet measure", () => {
+describe("leanmcp measure", () => {
   it(
     "prints a non-zero token-savings table for a real upstream",
     async () => {
-      const dir = await mkdtemp(path.join(tmpdir(), "mcp-diet-"));
-      const cfgPath = path.join(dir, "mcp-diet.config.json");
+      const dir = await mkdtemp(path.join(tmpdir(), "leanmcp-"));
+      const cfgPath = path.join(dir, "leanmcp.config.json");
       const cfg = {
         servers: {
           a: {
@@ -40,8 +40,8 @@ describe("mcp-diet measure", () => {
         expect(stdout).toMatch(/Server\s+Tools/);
         expect(stdout).toMatch(/^a\s+/m);
         expect(stdout).toMatch(/TOTAL/);
-        // The fixture has at least 3 tools and verbose descriptions, so the
-        // diet must shave at least *some* tokens.
+        // The fixture has at least 3 tools and verbose descriptions, so shrinking
+        // must shave at least *some* tokens.
         const totalLine = stdout.split("\n").find((l) => l.startsWith("TOTAL"));
         expect(totalLine).toBeDefined();
         const m = /(\d+(?:[,\d]*))\s+%/.exec(totalLine ?? "");

@@ -2,26 +2,26 @@ import { cosmiconfig, type Loader } from "cosmiconfig";
 import { parse as parseYaml } from "yaml";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { mcpDietConfigSchema, type McpDietConfig } from "./schema.js";
+import { leanMcpConfigSchema, type LeanMcpConfig } from "./schema.js";
 
 const yamlLoader: Loader = async (filepath: string) => {
   const text = await readFile(filepath, "utf8");
   return parseYaml(text);
 };
 
-const explorer = cosmiconfig("mcp-diet", {
+const explorer = cosmiconfig("leanmcp", {
   searchPlaces: [
-    "mcp-diet.config.yaml",
-    "mcp-diet.config.yml",
-    "mcp-diet.config.json",
-    "mcp-diet.config.js",
-    "mcp-diet.config.mjs",
-    ".mcp-diet.yaml",
-    ".mcp-diet.yml",
-    ".mcp-diet.json",
+    "leanmcp.config.yaml",
+    "leanmcp.config.yml",
+    "leanmcp.config.json",
+    "leanmcp.config.js",
+    "leanmcp.config.mjs",
+    ".leanmcp.yaml",
+    ".leanmcp.yml",
+    ".leanmcp.json",
     "package.json",
   ],
-  packageProp: "mcp-diet",
+  packageProp: "leanmcp",
   loaders: {
     ".yaml": yamlLoader,
     ".yml": yamlLoader,
@@ -36,12 +36,12 @@ export interface LoadOptions {
 }
 
 export interface LoadedConfig {
-  config: McpDietConfig;
+  config: LeanMcpConfig;
   filepath: string;
 }
 
 /**
- * Locate, parse, and validate the mcp-diet config. Substitutes `${VAR}` and
+ * Locate, parse, and validate the LeanMCP config. Substitutes `${VAR}` and
  * `${VAR:-default}` in string values from `process.env`.
  */
 export async function loadConfig(opts: LoadOptions = {}): Promise<LoadedConfig> {
@@ -52,7 +52,7 @@ export async function loadConfig(opts: LoadOptions = {}): Promise<LoadedConfig> 
 
   if (!result) {
     throw new Error(
-      "No mcp-diet config found. Create mcp-diet.config.yaml or pass --config <path>.",
+      "No LeanMCP config found. Create leanmcp.config.yaml or pass --config <path>.",
     );
   }
 
@@ -63,13 +63,13 @@ export async function loadConfig(opts: LoadOptions = {}): Promise<LoadedConfig> 
   };
 }
 
-export function validateConfig(raw: unknown): McpDietConfig {
-  const parsed = mcpDietConfigSchema.safeParse(raw);
+export function validateConfig(raw: unknown): LeanMcpConfig {
+  const parsed = leanMcpConfigSchema.safeParse(raw);
   if (!parsed.success) {
     const issues = parsed.error.issues
       .map((i) => `  - ${i.path.join(".") || "<root>"}: ${i.message}`)
       .join("\n");
-    throw new Error(`Invalid mcp-diet config:\n${issues}`);
+    throw new Error(`Invalid LeanMCP config:\n${issues}`);
   }
   return parsed.data;
 }

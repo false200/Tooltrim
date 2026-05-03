@@ -1,9 +1,9 @@
-# mcp-diet
+# LeanMCP
 
 > An open-source [Model Context Protocol](https://modelcontextprotocol.io) proxy that puts your tool list on a diet.
 > Aggregate N MCP servers, filter and shrink the noise, and trace every call.
 
-[![npm](https://img.shields.io/npm/v/mcp-diet.svg)](https://www.npmjs.com/package/mcp-diet)
+[![npm](https://img.shields.io/npm/v/leanmcp.svg)](https://www.npmjs.com/package/leanmcp)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## Why
@@ -11,7 +11,7 @@
 Connect three or four MCP servers in a single session and the **tool metadata alone routinely eats 40-50% of the context window** before the user has even typed a question.
 The MCP team's [2026 roadmap](https://blog.modelcontextprotocol.io/posts/2026-mcp-roadmap/) explicitly calls out gateways, proxies, and observability as priority work.
 
-`mcp-diet` is a small, drop-in proxy that sits in front of N upstream MCP servers and:
+**LeanMCP** (`leanmcp` on npm) is a small, drop-in proxy that sits in front of N upstream MCP servers and:
 
 - **filters** their tool / resource / prompt lists down to the ones your project actually uses,
 - **shrinks** verbose tool descriptions and dedupes JSON-Schema sub-trees, deterministically,
@@ -24,7 +24,7 @@ It speaks both `stdio` and `Streamable HTTP` in both directions, runs stateless 
 
 ## The hero
 
-Measured against five real, official `@modelcontextprotocol/*` servers (`server-everything` + `server-filesystem` + `server-memory` + `server-sequential-thinking` + `server-github`):
+Measured against five real, official `@modelcontextprotocol/*` servers (`server-everything` + `server-filesystem` + `server-memory` + `server-sequential-thinking` + `server-github`). The numbers below match the checked-in [`bench/REPORT.md`](bench/REPORT.md): full **`pnpm bench`** inside the **`leanmcp:dev` Docker image** (Debian bookworm, **linux-x64**, Node **20.18**), so CI and contributors get the same Linux-shaped baseline as the README—not a hand-tuned Windows-only run.
 
 ```text
 Scenario                Tools  Bytes   Tokens  vs raw (tokens)
@@ -33,11 +33,12 @@ all (shrunk)               63  45,276   9,590         −7.8%
 common (filter+shrink)     17  14,488   3,084        −70.3%
 task   (filter+shrink)      3   3,165     656        −93.7%
 
-Proxy round-trip overhead  +3.1 ms p50 / +4.6 ms p95  (tools/call, loopback)
-Throughput                 50 concurrent calls,  0 errors,  ~365 ops/sec
+Proxy round-trip overhead  +3.7 ms p50 / +6.7 ms p95  (tools/call, bench harness loopback inside container)
+Throughput                 50 concurrent calls,  0 errors,  ~271 ops/sec
+Agent (Claude Sonnet 4.5)  ~77% fewer cumulative input tokens (direct vs LeanMCP task filter) — see report §5
 ```
 
-Full reproducible report: [`bench/REPORT.md`](bench/REPORT.md). Run it yourself with `pnpm bench`.
+Full reproducible report: [`bench/REPORT.md`](bench/REPORT.md). Run the harness on the host with `pnpm bench`, or in Docker (same numbers on Linux) — see [`docs/DOCKER.md`](docs/DOCKER.md) and [`bench/README.md`](bench/README.md).
 
 ---
 
@@ -45,12 +46,12 @@ Full reproducible report: [`bench/REPORT.md`](bench/REPORT.md). Run it yourself 
 
 ```bash
 # 1. install (no global, no daemon, just npx)
-pnpm dlx mcp-diet --version    # or: npx mcp-diet --version
+pnpm dlx leanmcp --version    # or: npx leanmcp --version
 
 # 2. drop a config in your repo root
-cp node_modules/mcp-diet/examples/mcp-diet.config.yaml .
+cp node_modules/leanmcp/examples/leanmcp.config.yaml .
 
-# 3. point your MCP client at mcp-diet instead of the individual servers
+# 3. point your MCP client at LeanMCP instead of the individual servers
 ```
 
 Cursor / Claude Desktop / Codex stdio config:
@@ -58,21 +59,21 @@ Cursor / Claude Desktop / Codex stdio config:
 ```json
 {
   "mcpServers": {
-    "diet": {
+    "leanmcp": {
       "command": "npx",
-      "args": ["-y", "mcp-diet"]
+      "args": ["-y", "leanmcp"]
     }
   }
 }
 ```
 
-That's it. `mcp-diet` will read `mcp-diet.config.yaml` from the cwd, fan out to every upstream listed there, and present a single merged, filtered, shrunk tool list to your client.
+That's it. `leanmcp` will read `leanmcp.config.yaml` from the cwd, fan out to every upstream listed there, and present a single merged, filtered, shrunk tool list to your client.
 
 ---
 
 ## Configuration
 
-A complete example lives in [`examples/mcp-diet.config.yaml`](examples/mcp-diet.config.yaml).
+A complete example lives in [`examples/leanmcp.config.yaml`](examples/leanmcp.config.yaml).
 
 ```yaml
 servers:
@@ -96,7 +97,7 @@ shrink:
   mode: rules                    # rules | off | llm (v0.2)
   maxDescriptionChars: 160
   dedupeSchemas: true
-  cachePath: .mcp-diet/shrink-cache.json
+  cachePath: .leanmcp/shrink-cache.json
 
 inbound:
   stdio: true
@@ -108,22 +109,22 @@ inbound:
     sessions: stateless          # stateless | redis://... (v0.2)
 
 observability:
-  trace:   { sink: file, path: .mcp-diet/trace.ndjson }
+  trace:   { sink: file, path: .leanmcp/trace.ndjson }
   metrics: { prometheus: { enabled: true, port: 9464 } }
-  audit:   { enabled: true, path: .mcp-diet/audit.ndjson }
+  audit:   { enabled: true, path: .leanmcp/audit.ndjson }
 ```
 
 `${VAR}` and `${VAR:-default}` are expanded from the environment in any string value.
 
 ### Config files
 
-`mcp-diet` searches for one of these, walking up from the cwd:
+`leanmcp` searches for one of these, walking up from the cwd:
 
-- `mcp-diet.config.yaml` / `.yml`
-- `mcp-diet.config.json`
-- `mcp-diet.config.js` / `.mjs`
-- `.mcp-diet.yaml` / `.yml` / `.json`
-- a `"mcp-diet"` key in `package.json`
+- `leanmcp.config.yaml` / `.yml`
+- `leanmcp.config.json`
+- `leanmcp.config.js` / `.mjs`
+- `.leanmcp.yaml` / `.yml` / `.json`
+- a `"leanmcp"` key in `package.json`
 
 You can also pass `--config <path>` to any command.
 
@@ -150,7 +151,7 @@ The default `rules` mode is fully deterministic:
 5. Truncate at the first sentence boundary past `maxDescriptionChars`.
 6. JSON-Schema dedup: any sub-tree that appears 2+ times is hoisted to `$defs` and replaced with `$ref`.
 
-Output is hashed and cached in `.mcp-diet/shrink-cache.json`, so the same description always shrinks to the same bytes — your agent never sees a moving target.
+Output is hashed and cached in `.leanmcp/shrink-cache.json`, so the same description always shrinks to the same bytes — your agent never sees a moving target.
 
 The `llm` mode (v0.2) adds an optional offline pass that can be checked into git for reproducibility.
 
@@ -168,8 +169,8 @@ Every JSON-RPC frame in or out is one NDJSON line:
 ```
 
 ```bash
-mcp-diet trace tail              # follow with pretty-printing
-mcp-diet trace tail --no-pretty  # raw NDJSON, pipe to jq / Loki / Datadog
+leanmcp trace tail              # follow with pretty-printing
+leanmcp trace tail --no-pretty  # raw NDJSON, pipe to jq / Loki / Datadog
 ```
 
 ### Metrics
@@ -178,32 +179,32 @@ Prometheus endpoint at `http://<host>:9464/metrics`:
 
 | metric | type | labels |
 | --- | --- | --- |
-| `mcp_diet_calls_total` | counter | `upstream`, `tool`, `ok` |
-| `mcp_diet_call_duration_ms` | histogram | `upstream`, `tool`, `ok` |
-| `mcp_diet_tokens_saved` | gauge | `upstream` |
-| `mcp_diet_upstream_up` | gauge | `upstream` |
+| `lean_mcp_calls_total` | counter | `upstream`, `tool`, `ok` |
+| `lean_mcp_call_duration_ms` | histogram | `upstream`, `tool`, `ok` |
+| `lean_mcp_tokens_saved` | gauge | `upstream` |
+| `lean_mcp_upstream_up` | gauge | `upstream` |
 
 A starter Grafana dashboard is in [`examples/grafana-dashboard.json`](examples/grafana-dashboard.json).
 
 ### OpenTelemetry
 
-Set `OTEL_EXPORTER_OTLP_ENDPOINT` (or enable it in config) and `mcp-diet` initializes the Node SDK with an OTLP/HTTP trace exporter.
+Set `OTEL_EXPORTER_OTLP_ENDPOINT` (or enable it in config) and LeanMCP initializes the Node SDK with an OTLP/HTTP trace exporter.
 
 ### Audit
 
-Every `tools/call` lands in `.mcp-diet/audit.ndjson` with the identity claims (`sub`, `iss`, `aud`, `scope`, `client_id`) decoded — but **not** verified — from the inbound `Authorization` Bearer token. Run a real auth gateway in front of `mcp-diet` if you need cryptographic verification.
+Every `tools/call` lands in `.leanmcp/audit.ndjson` with the identity claims (`sub`, `iss`, `aud`, `scope`, `client_id`) decoded — but **not** verified — from the inbound `Authorization` Bearer token. Run a real auth gateway in front of LeanMCP if you need cryptographic verification.
 
 ---
 
 ## CLI
 
 ```text
-mcp-diet                       # start the proxy (default)
-mcp-diet start                 # explicit
-mcp-diet measure               # before/after token report; the README hero
-mcp-diet validate-config       # parse + validate, no startup
-mcp-diet validate-file <path>  # validate a JSON file against the schema
-mcp-diet trace tail            # tail the NDJSON trace
+leanmcp                       # start the proxy (default)
+leanmcp start                 # explicit
+leanmcp measure               # before/after token report; the README hero
+leanmcp validate-config       # parse + validate, no startup
+leanmcp validate-file <path>  # validate a JSON file against the schema
+leanmcp trace tail            # tail the NDJSON trace
 ```
 
 All commands accept `-c, --config <path>`.
@@ -217,7 +218,7 @@ flowchart LR
   subgraph Client[MCP Client]
     C[Cursor / Claude / Codex]
   end
-  subgraph Proxy[mcp-diet]
+  subgraph Proxy[LeanMCP]
     IN1[stdio inbound]
     IN2[Streamable HTTP inbound]
     CORE[Aggregator + Filter + Shrinker]
@@ -242,7 +243,7 @@ flowchart LR
   OUT --> U3
 ```
 
-`mcp-diet` uses the **low-level** `Server` from [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol/typescript-sdk) (not `McpServer.registerTool`) because the tool set is dynamic. In stateless Streamable HTTP mode it spins up a fresh `Server` per request, sharing the upstream connections, routing tables, filter, and shrinker through the persistent `Aggregator`.
+LeanMCP uses the **low-level** `Server` from [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol/typescript-sdk) (not `McpServer.registerTool`) because the tool set is dynamic. In stateless Streamable HTTP mode it spins up a fresh `Server` per request, sharing the upstream connections, routing tables, filter, and shrinker through the persistent `Aggregator`.
 
 ---
 

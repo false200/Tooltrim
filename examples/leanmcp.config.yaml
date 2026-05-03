@@ -1,7 +1,7 @@
-# mcp-diet — example configuration.
+# LeanMCP — example configuration.
 #
-# Place this file at the root of your project as `mcp-diet.config.yaml`,
-# point your MCP client at `npx -y mcp-diet`, and the proxy will fan out
+# Place this file at the root of your project as `leanmcp.config.yaml`,
+# point your MCP client at `npx -y leanmcp`, and the proxy will fan out
 # to every server below.
 
 servers:
@@ -38,7 +38,7 @@ shrink:
   mode: rules
   maxDescriptionChars: 160
   dedupeSchemas: true
-  cachePath: .mcp-diet/shrink-cache.json
+  cachePath: .leanmcp/shrink-cache.json
 
 inbound:
   stdio: true
@@ -52,7 +52,7 @@ inbound:
 observability:
   trace:
     sink: file
-    path: .mcp-diet/trace.ndjson
+    path: .leanmcp/trace.ndjson
   metrics:
     prometheus:
       enabled: true
@@ -62,7 +62,7 @@ observability:
       endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT}"
   audit:
     enabled: true
-    path: .mcp-diet/audit.ndjson
+    path: .leanmcp/audit.ndjson
 
 policy:
   defaultAuth: passthrough

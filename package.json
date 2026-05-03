@@ -1,9 +1,10 @@
 {
-  "name": "mcp-diet",
+  "name": "leanmcp",
   "version": "0.1.0",
-  "description": "An open-source MCP context-diet proxy: aggregate N MCP servers, filter and shrink tool descriptions, and trace every call.",
+  "description": "LeanMCP — an open-source MCP proxy: aggregate N MCP servers, filter and shrink tool descriptions, and trace every call.",
   "keywords": [
     "mcp",
+    "leanmcp",
     "model-context-protocol",
     "proxy",
     "gateway",
@@ -12,11 +13,11 @@
     "context-window"
   ],
   "license": "MIT",
-  "author": "mcp-diet contributors",
-  "homepage": "https://github.com/mcp-diet/mcp-diet",
+  "author": "LeanMCP contributors",
+  "homepage": "https://github.com/leanmcp/leanmcp",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mcp-diet/mcp-diet.git"
+    "url": "https://github.com/leanmcp/leanmcp.git"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -29,7 +30,7 @@
     }
   },
   "bin": {
-    "mcp-diet": "bin/mcp-diet"
+    "leanmcp": "bin/leanmcp"
   },
   "files": [
     "bin",
