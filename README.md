@@ -211,53 +211,6 @@ All commands accept `-c, --config <path>`.
 
 ---
 
-## Architecture
-
-```mermaid
-flowchart LR
-  subgraph Client[MCP Client]
-    C[Cursor / Claude / Codex]
-  end
-  subgraph Proxy[LeanMCP]
-    IN1[stdio inbound]
-    IN2[Streamable HTTP inbound]
-    CORE[Aggregator + Filter + Shrinker]
-    POL[OAuth pass-through]
-    OBS[Tracer + Prometheus + OTel]
-    OUT[Upstream Manager]
-  end
-  subgraph Up[Upstreams]
-    U1[GitHub MCP]
-    U2[Linear MCP]
-    U3[Postgres MCP]
-  end
-  C --> IN1
-  C --> IN2
-  IN1 --> CORE
-  IN2 --> CORE
-  CORE --> POL
-  POL --> OUT
-  CORE --> OBS
-  OUT --> U1
-  OUT --> U2
-  OUT --> U3
-```
-
-LeanMCP uses the **low-level** `Server` from [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol/typescript-sdk) (not `McpServer.registerTool`) because the tool set is dynamic. In stateless Streamable HTTP mode it spins up a fresh `Server` per request, sharing the upstream connections, routing tables, filter, and shrinker through the persistent `Aggregator`.
-
----
-
-## Roadmap
-
-- [ ] **v0.2** LLM-assisted shrinking (`mode: llm`) with a checked-in offline cache.
-- [ ] **v0.2** Cross-restart session resumability via Redis (`Last-Event-ID`).
-- [ ] **v0.2** [Server cards](https://blog.modelcontextprotocol.io/posts/2026-mcp-roadmap/) (`.well-known/mcp.json`) discovery.
-- [ ] **v0.2** Per-upstream `tokenRewrite` hook for OAuth-on-behalf-of flows.
-- [ ] **v0.3** Web dashboard reading the NDJSON trace.
-- [ ] **v0.3** Tool execution sandboxing (Docker / Firecracker).
-
----
-
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). PRs welcome — especially bug reports with a config that reproduces the issue.
