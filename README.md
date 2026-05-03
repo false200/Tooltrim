@@ -42,17 +42,51 @@ Full reproducible report: [`bench/REPORT.md`](bench/REPORT.md). Run the harness 
 
 ---
 
-## Quickstart
+## Install and use
+
+Published as [`tooltrim` on npm](https://www.npmjs.com/package/tooltrim). You do **not** need to clone this repository to run it.
+
+### Prerequisites
+
+- **Node.js 20+** ([nodejs.org](https://nodejs.org))
+
+### 1. Install (pick one)
+
+| How | Command | Best for |
+|-----|---------|----------|
+| **In your project** | `npm install tooltrim` | Copying `examples/` from `node_modules`, CI, apps that depend on Tooltrim |
+| **Global CLI** | `npm install -g tooltrim` | Running `tooltrim` on your PATH anywhere |
+| **No install** | *(skip)* — use `npx -y tooltrim …` below | Editors / MCP only; `npx` pulls the package from npm when needed |
+
+Equivalent package managers: `pnpm add tooltrim`, `yarn add tooltrim`, or `pnpm dlx tooltrim --version` to confirm the registry.
+
+### 2. Config file in your project root
+
+Tooltrim reads **`tooltrim.config.yaml`** from the current working directory (see [Config files](#config-files) for search paths).
+
+**If you used `npm install tooltrim` in that project**, copy the example and edit `servers:` for your MCPs:
 
 ```bash
-# 1. install (no global, no daemon, just npx)
-pnpm dlx tooltrim --version    # or: npx tooltrim --version
-
-# 2. drop a config in your repo root
-cp node_modules/tooltrim/examples/tooltrim.config.yaml .
-
-# 3. point your MCP client at Tooltrim instead of the individual servers
+# macOS / Linux
+cp node_modules/tooltrim/examples/tooltrim.config.yaml ./tooltrim.config.yaml
 ```
+
+```powershell
+# Windows (PowerShell or cmd)
+copy node_modules\tooltrim\examples\tooltrim.config.yaml .\tooltrim.config.yaml
+```
+
+**If you never run `npm install`**, create `tooltrim.config.yaml` yourself using the [Configuration](#configuration) snippet below, or install once only to copy the example, then remove `tooltrim` from `package.json` if you prefer a clean tree and rely on `npx -y tooltrim` in the editor.
+
+Check the file:
+
+```bash
+npx -y tooltrim validate-config
+```
+
+### 3. Point your MCP client at Tooltrim
+
+Use **`npx`** with **`-y`** so the IDE never blocks on an install prompt.
 
 Cursor / Claude Desktop / Codex stdio config:
 
@@ -67,7 +101,11 @@ Cursor / Claude Desktop / Codex stdio config:
 }
 ```
 
-That's it. `tooltrim` will read `tooltrim.config.yaml` from the cwd, fan out to every upstream listed there, and present a single merged, filtered, shrunk tool list to your client.
+The client should use the **project root** (folder that contains `tooltrim.config.yaml`) as the process working directory when it launches `npx`.
+
+### 4. What you get
+
+`tooltrim` fans out to every upstream in your config and exposes **one** merged, filtered, shrunk tool list to the client—replace per-server MCP entries with this single entry.
 
 ---
 
