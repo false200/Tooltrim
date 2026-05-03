@@ -1,10 +1,10 @@
 {
-  "name": "leanmcp",
+  "name": "tooltrim",
   "version": "0.1.0",
-  "description": "LeanMCP — an open-source MCP proxy: aggregate N MCP servers, filter and shrink tool descriptions, and trace every call.",
+  "description": "Tooltrim — an open-source MCP proxy: aggregate N MCP servers, filter and shrink tool descriptions, and trace every call.",
   "keywords": [
     "mcp",
-    "leanmcp",
+    "tooltrim",
     "model-context-protocol",
     "proxy",
     "gateway",
@@ -13,7 +13,7 @@
     "context-window"
   ],
   "license": "MIT",
-  "author": "LeanMCP contributors",
+  "author": "Tooltrim contributors",
   "homepage": "https://github.com/false200/LeanMCP",
   "repository": {
     "type": "git",
@@ -30,7 +30,7 @@
     }
   },
   "bin": {
-    "leanmcp": "bin/leanmcp"
+    "tooltrim": "bin/tooltrim"
   },
   "files": [
     "bin",

@@ -44,5 +44,5 @@ jobs:
       - name: Smoke-test the CLI
         shell: bash
         run: |
-          node bin/leanmcp --version
-          node bin/leanmcp measure --config examples/demo.config.json
+          node bin/tooltrim --version
+          node bin/tooltrim measure --config examples/demo.config.json

@@ -16,7 +16,7 @@ coverage
 *.tsbuildinfo
 
 # Local runtime artifacts
-.leanmcp
+.tooltrim
 bench/sandbox
 bench/results/*.json
 bench/REPORT.md

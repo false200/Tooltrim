@@ -1,4 +1,4 @@
-# LeanMCP benchmark config (Docker variant)
+# Tooltrim benchmark config (Docker variant)
 #
 # Same as examples/benchmark.config.yaml, but the inbound HTTP and Prometheus
 # exporters bind to 0.0.0.0 so a `docker run -p ...` port-forward can reach
@@ -56,7 +56,7 @@ shrink:
   mode: rules
   maxDescriptionChars: 160
   dedupeSchemas: true
-  cachePath: .leanmcp/shrink-cache.json
+  cachePath: .tooltrim/shrink-cache.json
 
 inbound:
   stdio: false
@@ -70,7 +70,7 @@ inbound:
 observability:
   trace:
     sink: file
-    path: .leanmcp/trace.ndjson
+    path: .tooltrim/trace.ndjson
   metrics:
     prometheus:
       enabled: true
@@ -78,7 +78,7 @@ observability:
       port: 9464
   audit:
     enabled: true
-    path: .leanmcp/audit.ndjson
+    path: .tooltrim/audit.ndjson
 
 policy:
   defaultAuth: none

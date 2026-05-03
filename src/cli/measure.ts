@@ -8,11 +8,11 @@ import { loadConfig } from "../config/load.js";
 interface ServerRow {
   server: string;
   toolsRaw: number;
-  toolsLean: number;
+  toolsTrim: number;
   bytesRaw: number;
-  bytesLean: number;
+  bytesTrim: number;
   tokensRaw: number;
-  tokensLean: number;
+  tokensTrim: number;
 }
 
 export interface MeasureOptions {
@@ -40,11 +40,11 @@ export async function runMeasure(opts: MeasureOptions = {}): Promise<void> {
         rows.push({
           server: id,
           toolsRaw: 0,
-          toolsLean: 0,
+          toolsTrim: 0,
           bytesRaw: 0,
-          bytesLean: 0,
+          bytesTrim: 0,
           tokensRaw: 0,
-          tokensLean: 0,
+          tokensTrim: 0,
         });
         continue;
       }
@@ -71,16 +71,16 @@ export async function runMeasure(opts: MeasureOptions = {}): Promise<void> {
       );
 
       const rawJson = JSON.stringify(raw);
-      const leanJson = JSON.stringify(shrunk);
+      const trimmedJson = JSON.stringify(shrunk);
 
       rows.push({
         server: id,
         toolsRaw: raw.length,
-        toolsLean: shrunk.length,
+        toolsTrim: shrunk.length,
         bytesRaw: byteLength(rawJson),
-        bytesLean: byteLength(leanJson),
+        bytesTrim: byteLength(trimmedJson),
         tokensRaw: countTokens(rawJson),
-        tokensLean: countTokens(leanJson),
+        tokensTrim: countTokens(trimmedJson),
       });
     }
   } finally {
@@ -98,32 +98,32 @@ function printTable(rows: ServerRow[]): void {
   const total: ServerRow = {
     server: "TOTAL",
     toolsRaw: rows.reduce((a, r) => a + r.toolsRaw, 0),
-    toolsLean: rows.reduce((a, r) => a + r.toolsLean, 0),
+    toolsTrim: rows.reduce((a, r) => a + r.toolsTrim, 0),
     bytesRaw: rows.reduce((a, r) => a + r.bytesRaw, 0),
-    bytesLean: rows.reduce((a, r) => a + r.bytesLean, 0),
+    bytesTrim: rows.reduce((a, r) => a + r.bytesTrim, 0),
     tokensRaw: rows.reduce((a, r) => a + r.tokensRaw, 0),
-    tokensLean: rows.reduce((a, r) => a + r.tokensLean, 0),
+    tokensTrim: rows.reduce((a, r) => a + r.tokensTrim, 0),
   };
   const all = [...rows, total];
 
   const headers = [
     "Server",
-    "Tools (raw → lean)",
+    "Tools (raw → trim)",
     "Bytes (raw)",
-    "Bytes (lean)",
+    "Bytes (trim)",
     "Tokens (raw)",
-    "Tokens (lean)",
+    "Tokens (trim)",
     "Saved",
   ];
   const lines = all.map((r) => {
-    const saved = r.tokensRaw === 0 ? 0 : ((r.tokensRaw - r.tokensLean) / r.tokensRaw) * 100;
+    const saved = r.tokensRaw === 0 ? 0 : ((r.tokensRaw - r.tokensTrim) / r.tokensRaw) * 100;
     return [
       r.server,
-      `${r.toolsRaw} → ${r.toolsLean}`,
+      `${r.toolsRaw} → ${r.toolsTrim}`,
       r.bytesRaw.toLocaleString("en-US"),
-      r.bytesLean.toLocaleString("en-US"),
+      r.bytesTrim.toLocaleString("en-US"),
       r.tokensRaw.toLocaleString("en-US"),
-      r.tokensLean.toLocaleString("en-US"),
+      r.tokensTrim.toLocaleString("en-US"),
       `${saved.toFixed(1)}%`,
     ];
   });

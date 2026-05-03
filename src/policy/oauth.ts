@@ -1,5 +1,5 @@
 /**
- * OAuth pass-through helpers. LeanMCP does not validate tokens — that's the
+ * OAuth pass-through helpers. Tooltrim does not validate tokens — that's the
  * upstream's job. We only:
  *
  *   1. forward the inbound `Authorization` header onto upstream HTTP calls
@@ -8,7 +8,7 @@
  *      claims for audit logging.
  *
  * If you need true verification, run a downstream API gateway in front of
- * LeanMCP — that's already the recommended deployment pattern in the 2026
+ * Tooltrim — that's already the recommended deployment pattern in the 2026
  * MCP roadmap.
  */
 

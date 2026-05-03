@@ -10,7 +10,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import type { Logger } from "pino";
-import type { LeanMcpConfig } from "../config/schema.js";
+import type { TooltrimConfig } from "../config/schema.js";
 import { child as childLogger } from "../logger.js";
 import { ToolFilter } from "./filter.js";
 import { Shrinker } from "./shrinker.js";
@@ -18,10 +18,10 @@ import type { UpstreamManager } from "../upstream/manager.js";
 import type { Tracer } from "../observability/tracer.js";
 import type { MetricsRecorder } from "../observability/metrics.js";
 
-const PROXY_INFO = { name: "leanmcp", version: "0.1.0" };
+const PROXY_INFO = { name: "tooltrim", version: "0.1.0" };
 
 export interface AggregatorDeps {
-  cfg: LeanMcpConfig;
+  cfg: TooltrimConfig;
   upstream: UpstreamManager;
   filter: ToolFilter;
   shrinker: Shrinker;
@@ -68,7 +68,7 @@ export class Aggregator {
     const server = new Server(PROXY_INFO, {
       capabilities: this.computePlausibleCapabilities(),
       instructions:
-        "You're talking to LeanMCP, a proxy that aggregates multiple MCP servers into one. " +
+        "You're talking to Tooltrim, a proxy that aggregates multiple MCP servers into one. " +
         "Tool names are namespaced as `<server>.<tool>`.",
     });
     this.wireHandlers(server);
@@ -104,10 +104,10 @@ export class Aggregator {
         route = this.toolRoute.get(name);
       }
       if (!route) {
-        throw new Error(`tool "${name}" not found in LeanMCP routing table`);
+        throw new Error(`tool "${name}" not found in Tooltrim routing table`);
       }
       if (!this.deps.filter.isAllowed(name, "tool")) {
-        throw new Error(`tool "${name}" is denied by LeanMCP policy`);
+        throw new Error(`tool "${name}" is denied by Tooltrim policy`);
       }
       if (this.deps.cfg.policy.blockedTools.includes(name)) {
         throw new Error(`tool "${name}" is on the blockedTools list`);
@@ -174,7 +174,7 @@ export class Aggregator {
         upstreamId = this.resourceRoute.get(uri);
       }
       if (!upstreamId) {
-        throw new Error(`resource "${uri}" not found in LeanMCP routing table`);
+        throw new Error(`resource "${uri}" not found in Tooltrim routing table`);
       }
       const conn = this.deps.upstream.connections.get(upstreamId);
       if (!conn) throw new Error(`upstream "${upstreamId}" is not connected`);
@@ -194,7 +194,7 @@ export class Aggregator {
         route = this.promptRoute.get(name);
       }
       if (!route) {
-        throw new Error(`prompt "${name}" not found in LeanMCP routing table`);
+        throw new Error(`prompt "${name}" not found in Tooltrim routing table`);
       }
       const conn = this.deps.upstream.connections.get(route.upstreamId);
       if (!conn) throw new Error(`upstream "${route.upstreamId}" is not connected`);

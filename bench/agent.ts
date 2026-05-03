@@ -120,8 +120,8 @@ export async function runAgentBench(): Promise<AgentReport> {
     await directBackend.close();
   }
 
-  // Pass B: through LeanMCP with the task scenario applied
-  process.stderr.write("\n[agent] === pass B: proxy (LeanMCP, task filter) ===\n");
+  // Pass B: through Tooltrim with the task scenario applied
+  process.stderr.write("\n[agent] === pass B: proxy (Tooltrim, task filter) ===\n");
   const proxyBackend = await openProxyBackend();
   try {
     report.proxy = await runOnce(anthropic, model, "proxy", proxyBackend);
@@ -335,7 +335,7 @@ async function openProxyBackend(): Promise<ToolBackend> {
 
   const transport = new StreamableHTTPClientTransport(new URL(BENCH_HTTP_URL));
   const client = new Client(
-    { name: "leanmcp-bench-agent", version: "0.1.0" },
+    { name: "tooltrim-bench-agent", version: "0.1.0" },
     { capabilities: {} },
   );
   await client.connect(transport);

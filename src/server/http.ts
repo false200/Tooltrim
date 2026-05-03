@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import type { Server as McpServerLowLevel } from "@modelcontextprotocol/sdk/server/index.js";
-import type { LeanMcpConfig } from "../config/schema.js";
+import type { TooltrimConfig } from "../config/schema.js";
 import type { UpstreamManager } from "../upstream/manager.js";
 import type { AuditLogger } from "../observability/audit.js";
 import { unsafeDecodeBearer } from "../policy/oauth.js";
@@ -22,7 +22,7 @@ export interface InboundHttpHandle {
  * (provided by the Aggregator) and call it on every POST.
  */
 export async function startHttpServer(args: {
-  cfg: LeanMcpConfig;
+  cfg: TooltrimConfig;
   createServer: () => McpServerLowLevel;
   upstream: UpstreamManager;
   audit: AuditLogger;

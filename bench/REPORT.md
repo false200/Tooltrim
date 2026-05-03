@@ -1,24 +1,24 @@
-# LeanMCP enterprise benchmark
+# Tooltrim enterprise benchmark
 
 > Five real MCP servers, one ~63-tool fan-out, a Claude Sonnet 4.5 agent loop,
-> and the same task run twice — once direct, once through `LeanMCP`.
+> and the same task run twice — once direct, once through `Tooltrim`.
 > Numbers below come from `pnpm bench`; raw JSON is in `bench/results/`.
 
 - Run timestamp: `2026-05-03T17:36:40.633Z`
 - Platform: `win32-x64`
 - Node: `v24.12.0`
-- LeanMCP: `v0.1`
+- Tooltrim: `v0.1`
 
 ## TL;DR
 
 - **Token diet**: 63 tools · 10,401 tokens of metadata at baseline → 3 tools · 656 tokens with the `task` filter. **93.7% reduction.**
 - **Proxy overhead**: `tools/call` p50 2.1 ms vs 0.3 ms direct (Δ +1.9 ms p50, +2.8 ms p95).
 - **Concurrency**: 50 parallel `tools/call` finished in 101 ms — **495 ops/sec, 0 errors**.
-- **Real LLM money**: same Claude Sonnet 4.5 task = 54,714 input tokens direct vs 12,690 through LeanMCP (**−42,024, 76.8% cheaper**).
+- **Real LLM money**: same Claude Sonnet 4.5 task = 54,714 input tokens direct vs 12,690 through Tooltrim (**−42,024, 76.8% cheaper**).
 
 ## 1. Setup under test
 
-Five MCP servers, all spawned over stdio, all reached through one `LeanMCP` Streamable HTTP inbound:
+Five MCP servers, all spawned over stdio, all reached through one `Tooltrim` Streamable HTTP inbound:
 
 | Upstream | Package | Server name | Version | Tools | Initialize ms |
 | --- | --- | --- | --- | --- | --- |
@@ -147,7 +147,7 @@ These three servers are listed first in the "Reference Servers" section of the R
 
 ## 6. Trace + metrics evidence
 
-Last 10 lines of `.leanmcp/trace.ndjson`:
+Last 10 lines of `.tooltrim/trace.ndjson`:
 
 ```ndjson
 {"level":"info","time":"2026-05-03T17:37:01.058Z","trace":true,"dir":"in","upstream":"everything","method":"tools/call","name":"everything.echo","ok":true,"durMs":22,"msg":"tools/call"}
@@ -165,17 +165,17 @@ Last 10 lines of `.leanmcp/trace.ndjson`:
 Live `/metrics` excerpt scraped during the throughput phase:
 
 ```text
-lean_mcp_calls_total{upstream="everything",tool="everything.echo",ok="true",service="leanmcp"} 51
-lean_mcp_call_duration_ms_bucket{le="25",service="leanmcp",upstream="everything",tool="everything.echo",ok="true"} 16
-lean_mcp_call_duration_ms_bucket{le="100",service="leanmcp",upstream="everything",tool="everything.echo",ok="true"} 51
-lean_mcp_call_duration_ms_bucket{le="250",service="leanmcp",upstream="everything",tool="everything.echo",ok="true"} 51
-lean_mcp_call_duration_ms_sum{service="leanmcp",upstream="everything",tool="everything.echo",ok="true"} 1629
-lean_mcp_call_duration_ms_count{service="leanmcp",upstream="everything",tool="everything.echo",ok="true"} 51
-lean_mcp_upstream_up{upstream="github",service="leanmcp"} 1
-lean_mcp_upstream_up{upstream="memory",service="leanmcp"} 1
-lean_mcp_upstream_up{upstream="sequentialthinking",service="leanmcp"} 1
-lean_mcp_upstream_up{upstream="everything",service="leanmcp"} 1
-lean_mcp_upstream_up{upstream="filesystem",service="leanmcp"} 1
+tooltrim_calls_total{upstream="everything",tool="everything.echo",ok="true",service="tooltrim"} 51
+tooltrim_call_duration_ms_bucket{le="25",service="tooltrim",upstream="everything",tool="everything.echo",ok="true"} 16
+tooltrim_call_duration_ms_bucket{le="100",service="tooltrim",upstream="everything",tool="everything.echo",ok="true"} 51
+tooltrim_call_duration_ms_bucket{le="250",service="tooltrim",upstream="everything",tool="everything.echo",ok="true"} 51
+tooltrim_call_duration_ms_sum{service="tooltrim",upstream="everything",tool="everything.echo",ok="true"} 1629
+tooltrim_call_duration_ms_count{service="tooltrim",upstream="everything",tool="everything.echo",ok="true"} 51
+tooltrim_upstream_up{upstream="github",service="tooltrim"} 1
+tooltrim_upstream_up{upstream="memory",service="tooltrim"} 1
+tooltrim_upstream_up{upstream="sequentialthinking",service="tooltrim"} 1
+tooltrim_upstream_up{upstream="everything",service="tooltrim"} 1
+tooltrim_upstream_up{upstream="filesystem",service="tooltrim"} 1
 ```
 
 > The trace.ndjson and `/metrics` endpoint are hot during the bench because `examples/benchmark.config.yaml` enables `observability.trace`, `observability.metrics.prometheus`, and `observability.audit`. They're real, not theoretical.

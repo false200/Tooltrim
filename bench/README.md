@@ -1,6 +1,6 @@
-# LeanMCP enterprise benchmark
+# Tooltrim enterprise benchmark
 
-End-to-end harness that proves LeanMCP against five real MCP servers and
+End-to-end harness that proves Tooltrim against five real MCP servers and
 a real Claude Sonnet 4.5 agent loop. Output is `bench/REPORT.md`.
 
 ## Quick start
@@ -30,18 +30,18 @@ files are present.
 ## Docker (Linux, reproducible)
 
 The checked-in [`REPORT.md`](REPORT.md) hero numbers are produced with
-**`pnpm bench` inside the `leanmcp:dev` image** (linux-x64, Node 20) so the
+**`pnpm bench` inside the `tooltrim:dev` image** (linux-x64, Node 20) so the
 README and the report stay aligned regardless of your host OS.
 
 ```bash
-docker build -t leanmcp:dev .
+docker build -t tooltrim:dev .
 
 docker run --rm \
   -e GITHUB_TOKEN="$GITHUB_TOKEN" \
   -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
   -v "$(pwd)/bench/results:/app/bench/results" \
   -v "$(pwd)/bench:/app/bench" \
-  leanmcp:dev \
+  tooltrim:dev \
   pnpm bench
 ```
 
@@ -56,7 +56,7 @@ PowerShell: use `${PWD}\bench\...` for the volume paths. Full build/run notes:
 | `measure` | For 4 filter scenarios (raw / shrunk / common / task) records bytes + tokens of the merged tool list. | `bench/results/measure.json` |
 | `latency` | 100 samples each of `tools/list` and `tools/call (everything.echo)` direct vs through the proxy. | `bench/results/latency.json` |
 | `throughput` | 50 concurrent `tools/call` against the proxy, ops/sec + error count. | `bench/results/throughput.json` |
-| `agent` | Locked task run twice (direct fan-out vs LeanMCP), Claude Sonnet 4.5, capped at 8 turns × 1024 tokens. | `bench/results/agent{,-direct,-proxy}.json` |
+| `agent` | Locked task run twice (direct fan-out vs Tooltrim), Claude Sonnet 4.5, capped at 8 turns × 1024 tokens. | `bench/results/agent{,-direct,-proxy}.json` |
 | `report` | Stitches everything into `bench/REPORT.md`. | `bench/REPORT.md` |
 
 ## Flags

@@ -1,12 +1,12 @@
-# LeanMCP — Linux container image
+# Tooltrim — Linux container image
 #
-# Default behavior: starts the LeanMCP proxy on 0.0.0.0:8799 (MCP Streamable HTTP)
+# Default behavior: starts the Tooltrim proxy on 0.0.0.0:8799 (MCP Streamable HTTP)
 # and 0.0.0.0:9464 (Prometheus). It fans out to five upstream MCP servers via
 # `npx`, so we warm the npm cache for those packages during build to make the
 # first call fast and self-contained.
 #
 # Override CMD to run the bench harness instead, e.g.:
-#   docker run --rm leanmcp:dev pnpm bench --skip-agent
+#   docker run --rm tooltrim:dev pnpm bench --skip-agent
 #
 # Multi-stage layout:
 #   1. deps    — install ALL dependencies (incl. dev) for build + bench
@@ -112,7 +112,7 @@ RUN set -eux; \
 
 # Filesystem upstream needs a sandbox dir; the bench config defaults to
 # /app/bench/sandbox via BENCH_FS_ROOT.
-RUN mkdir -p /app/bench/sandbox /app/bench/results /app/.leanmcp
+RUN mkdir -p /app/bench/sandbox /app/bench/results /app/.tooltrim
 
 EXPOSE 8799 9464
 
@@ -120,4 +120,4 @@ EXPOSE 8799 9464
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 
 # Default: start the proxy. Override with `pnpm bench [...]` etc.
-CMD ["node", "bin/leanmcp", "start", "--config", "examples/benchmark.docker.config.yaml"]
+CMD ["node", "bin/tooltrim", "start", "--config", "examples/benchmark.docker.config.yaml"]

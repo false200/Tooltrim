@@ -2,26 +2,26 @@ import { cosmiconfig, type Loader } from "cosmiconfig";
 import { parse as parseYaml } from "yaml";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { leanMcpConfigSchema, type LeanMcpConfig } from "./schema.js";
+import { tooltrimConfigSchema, type TooltrimConfig } from "./schema.js";
 
 const yamlLoader: Loader = async (filepath: string) => {
   const text = await readFile(filepath, "utf8");
   return parseYaml(text);
 };
 
-const explorer = cosmiconfig("leanmcp", {
+const explorer = cosmiconfig("tooltrim", {
   searchPlaces: [
-    "leanmcp.config.yaml",
-    "leanmcp.config.yml",
-    "leanmcp.config.json",
-    "leanmcp.config.js",
-    "leanmcp.config.mjs",
-    ".leanmcp.yaml",
-    ".leanmcp.yml",
-    ".leanmcp.json",
+    "tooltrim.config.yaml",
+    "tooltrim.config.yml",
+    "tooltrim.config.json",
+    "tooltrim.config.js",
+    "tooltrim.config.mjs",
+    ".tooltrim.yaml",
+    ".tooltrim.yml",
+    ".tooltrim.json",
     "package.json",
   ],
-  packageProp: "leanmcp",
+  packageProp: "tooltrim",
   loaders: {
     ".yaml": yamlLoader,
     ".yml": yamlLoader,
@@ -36,12 +36,12 @@ export interface LoadOptions {
 }
 
 export interface LoadedConfig {
-  config: LeanMcpConfig;
+  config: TooltrimConfig;
   filepath: string;
 }
 
 /**
- * Locate, parse, and validate the LeanMCP config. Substitutes `${VAR}` and
+ * Locate, parse, and validate the Tooltrim config. Substitutes `${VAR}` and
  * `${VAR:-default}` in string values from `process.env`.
  */
 export async function loadConfig(opts: LoadOptions = {}): Promise<LoadedConfig> {
@@ -52,7 +52,7 @@ export async function loadConfig(opts: LoadOptions = {}): Promise<LoadedConfig> 
 
   if (!result) {
     throw new Error(
-      "No LeanMCP config found. Create leanmcp.config.yaml or pass --config <path>.",
+      "No Tooltrim config found. Create tooltrim.config.yaml or pass --config <path>.",
     );
   }
 
@@ -63,13 +63,13 @@ export async function loadConfig(opts: LoadOptions = {}): Promise<LoadedConfig> 
   };
 }
 
-export function validateConfig(raw: unknown): LeanMcpConfig {
-  const parsed = leanMcpConfigSchema.safeParse(raw);
+export function validateConfig(raw: unknown): TooltrimConfig {
+  const parsed = tooltrimConfigSchema.safeParse(raw);
   if (!parsed.success) {
     const issues = parsed.error.issues
       .map((i) => `  - ${i.path.join(".") || "<root>"}: ${i.message}`)
       .join("\n");
-    throw new Error(`Invalid LeanMCP config:\n${issues}`);
+    throw new Error(`Invalid Tooltrim config:\n${issues}`);
   }
   return parsed.data;
 }

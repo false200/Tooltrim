@@ -30,9 +30,9 @@ describe("inbound stdio (end-to-end)", () => {
   it(
     "an MCP client over stdio sees the proxy's namespaced tool list",
     async () => {
-      const dir = await mkdtemp(path.join(tmpdir(), "leanmcp-stdio-"));
+      const dir = await mkdtemp(path.join(tmpdir(), "tooltrim-stdio-"));
       cleanups.push(() => rm(dir, { recursive: true, force: true }));
-      const cfgPath = path.join(dir, "leanmcp.config.json");
+      const cfgPath = path.join(dir, "tooltrim.config.json");
       await writeFile(
         cfgPath,
         JSON.stringify({

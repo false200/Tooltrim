@@ -1,9 +1,9 @@
-# LeanMCP
+# Tooltrim
 
 > An open-source [Model Context Protocol](https://modelcontextprotocol.io) proxy that puts your tool list on a diet.
 > Aggregate N MCP servers, filter and shrink the noise, and trace every call.
 
-[![npm](https://img.shields.io/npm/v/leanmcp.svg)](https://www.npmjs.com/package/leanmcp)
+[![npm](https://img.shields.io/npm/v/tooltrim.svg)](https://www.npmjs.com/package/tooltrim)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## Why
@@ -11,7 +11,7 @@
 Connect three or four MCP servers in a single session and the **tool metadata alone routinely eats 40-50% of the context window** before the user has even typed a question.
 The MCP team's [2026 roadmap](https://blog.modelcontextprotocol.io/posts/2026-mcp-roadmap/) explicitly calls out gateways, proxies, and observability as priority work.
 
-**LeanMCP** (`leanmcp` on npm) is a small, drop-in proxy that sits in front of N upstream MCP servers and:
+**Tooltrim** (`tooltrim` on npm) is a small, drop-in proxy that sits in front of N upstream MCP servers and:
 
 - **filters** their tool / resource / prompt lists down to the ones your project actually uses,
 - **shrinks** verbose tool descriptions and dedupes JSON-Schema sub-trees, deterministically,
@@ -24,7 +24,7 @@ It speaks both `stdio` and `Streamable HTTP` in both directions, runs stateless 
 
 ## The hero
 
-Measured against five real, official `@modelcontextprotocol/*` servers (`server-everything` + `server-filesystem` + `server-memory` + `server-sequential-thinking` + `server-github`). The numbers below match the checked-in [`bench/REPORT.md`](bench/REPORT.md): full **`pnpm bench`** inside the **`leanmcp:dev` Docker image** (Debian bookworm, **linux-x64**, Node **20.18**), so CI and contributors get the same Linux-shaped baseline as the README—not a hand-tuned Windows-only run.
+Measured against five real, official `@modelcontextprotocol/*` servers (`server-everything` + `server-filesystem` + `server-memory` + `server-sequential-thinking` + `server-github`). The numbers below match the checked-in [`bench/REPORT.md`](bench/REPORT.md): full **`pnpm bench`** inside the **`tooltrim:dev` Docker image** (Debian bookworm, **linux-x64**, Node **20.18**), so CI and contributors get the same Linux-shaped baseline as the README—not a hand-tuned Windows-only run.
 
 ```text
 Scenario                Tools  Bytes   Tokens  vs raw (tokens)
@@ -35,7 +35,7 @@ task   (filter+shrink)      3   3,165     656        −93.7%
 
 Proxy round-trip overhead  +3.7 ms p50 / +6.7 ms p95  (tools/call, bench harness loopback inside container)
 Throughput                 50 concurrent calls,  0 errors,  ~271 ops/sec
-Agent (Claude Sonnet 4.5)  ~77% fewer cumulative input tokens (direct vs LeanMCP task filter) — see report §5
+Agent (Claude Sonnet 4.5)  ~77% fewer cumulative input tokens (direct vs Tooltrim task filter) — see report §5
 ```
 
 Full reproducible report: [`bench/REPORT.md`](bench/REPORT.md). Run the harness on the host with `pnpm bench`, or in Docker (same numbers on Linux) — see [`docs/DOCKER.md`](docs/DOCKER.md) and [`bench/README.md`](bench/README.md).
@@ -46,12 +46,12 @@ Full reproducible report: [`bench/REPORT.md`](bench/REPORT.md). Run the harness 
 
 ```bash
 # 1. install (no global, no daemon, just npx)
-pnpm dlx leanmcp --version    # or: npx leanmcp --version
+pnpm dlx tooltrim --version    # or: npx tooltrim --version
 
 # 2. drop a config in your repo root
-cp node_modules/leanmcp/examples/leanmcp.config.yaml .
+cp node_modules/tooltrim/examples/tooltrim.config.yaml .
 
-# 3. point your MCP client at LeanMCP instead of the individual servers
+# 3. point your MCP client at Tooltrim instead of the individual servers
 ```
 
 Cursor / Claude Desktop / Codex stdio config:
@@ -59,21 +59,21 @@ Cursor / Claude Desktop / Codex stdio config:
 ```json
 {
   "mcpServers": {
-    "leanmcp": {
+    "tooltrim": {
       "command": "npx",
-      "args": ["-y", "leanmcp"]
+      "args": ["-y", "tooltrim"]
     }
   }
 }
 ```
 
-That's it. `leanmcp` will read `leanmcp.config.yaml` from the cwd, fan out to every upstream listed there, and present a single merged, filtered, shrunk tool list to your client.
+That's it. `tooltrim` will read `tooltrim.config.yaml` from the cwd, fan out to every upstream listed there, and present a single merged, filtered, shrunk tool list to your client.
 
 ---
 
 ## Configuration
 
-A complete example lives in [`examples/leanmcp.config.yaml`](examples/leanmcp.config.yaml).
+A complete example lives in [`examples/tooltrim.config.yaml`](examples/tooltrim.config.yaml).
 
 ```yaml
 servers:
@@ -97,7 +97,7 @@ shrink:
   mode: rules                    # rules | off | llm (v0.2)
   maxDescriptionChars: 160
   dedupeSchemas: true
-  cachePath: .leanmcp/shrink-cache.json
+  cachePath: .tooltrim/shrink-cache.json
 
 inbound:
   stdio: true
@@ -109,22 +109,22 @@ inbound:
     sessions: stateless          # stateless | redis://... (v0.2)
 
 observability:
-  trace:   { sink: file, path: .leanmcp/trace.ndjson }
+  trace:   { sink: file, path: .tooltrim/trace.ndjson }
   metrics: { prometheus: { enabled: true, port: 9464 } }
-  audit:   { enabled: true, path: .leanmcp/audit.ndjson }
+  audit:   { enabled: true, path: .tooltrim/audit.ndjson }
 ```
 
 `${VAR}` and `${VAR:-default}` are expanded from the environment in any string value.
 
 ### Config files
 
-`leanmcp` searches for one of these, walking up from the cwd:
+`tooltrim` searches for one of these, walking up from the cwd:
 
-- `leanmcp.config.yaml` / `.yml`
-- `leanmcp.config.json`
-- `leanmcp.config.js` / `.mjs`
-- `.leanmcp.yaml` / `.yml` / `.json`
-- a `"leanmcp"` key in `package.json`
+- `tooltrim.config.yaml` / `.yml`
+- `tooltrim.config.json`
+- `tooltrim.config.js` / `.mjs`
+- `.tooltrim.yaml` / `.yml` / `.json`
+- a `"tooltrim"` key in `package.json`
 
 You can also pass `--config <path>` to any command.
 
@@ -151,7 +151,7 @@ The default `rules` mode is fully deterministic:
 5. Truncate at the first sentence boundary past `maxDescriptionChars`.
 6. JSON-Schema dedup: any sub-tree that appears 2+ times is hoisted to `$defs` and replaced with `$ref`.
 
-Output is hashed and cached in `.leanmcp/shrink-cache.json`, so the same description always shrinks to the same bytes — your agent never sees a moving target.
+Output is hashed and cached in `.tooltrim/shrink-cache.json`, so the same description always shrinks to the same bytes — your agent never sees a moving target.
 
 The `llm` mode (v0.2) adds an optional offline pass that can be checked into git for reproducibility.
 
@@ -169,8 +169,8 @@ Every JSON-RPC frame in or out is one NDJSON line:
 ```
 
 ```bash
-leanmcp trace tail              # follow with pretty-printing
-leanmcp trace tail --no-pretty  # raw NDJSON, pipe to jq / Loki / Datadog
+tooltrim trace tail              # follow with pretty-printing
+tooltrim trace tail --no-pretty  # raw NDJSON, pipe to jq / Loki / Datadog
 ```
 
 ### Metrics
@@ -179,32 +179,32 @@ Prometheus endpoint at `http://<host>:9464/metrics`:
 
 | metric | type | labels |
 | --- | --- | --- |
-| `lean_mcp_calls_total` | counter | `upstream`, `tool`, `ok` |
-| `lean_mcp_call_duration_ms` | histogram | `upstream`, `tool`, `ok` |
-| `lean_mcp_tokens_saved` | gauge | `upstream` |
-| `lean_mcp_upstream_up` | gauge | `upstream` |
+| `tooltrim_calls_total` | counter | `upstream`, `tool`, `ok` |
+| `tooltrim_call_duration_ms` | histogram | `upstream`, `tool`, `ok` |
+| `tooltrim_tokens_saved` | gauge | `upstream` |
+| `tooltrim_upstream_up` | gauge | `upstream` |
 
 A starter Grafana dashboard is in [`examples/grafana-dashboard.json`](examples/grafana-dashboard.json).
 
 ### OpenTelemetry
 
-Set `OTEL_EXPORTER_OTLP_ENDPOINT` (or enable it in config) and LeanMCP initializes the Node SDK with an OTLP/HTTP trace exporter.
+Set `OTEL_EXPORTER_OTLP_ENDPOINT` (or enable it in config) and Tooltrim initializes the Node SDK with an OTLP/HTTP trace exporter.
 
 ### Audit
 
-Every `tools/call` lands in `.leanmcp/audit.ndjson` with the identity claims (`sub`, `iss`, `aud`, `scope`, `client_id`) decoded — but **not** verified — from the inbound `Authorization` Bearer token. Run a real auth gateway in front of LeanMCP if you need cryptographic verification.
+Every `tools/call` lands in `.tooltrim/audit.ndjson` with the identity claims (`sub`, `iss`, `aud`, `scope`, `client_id`) decoded — but **not** verified — from the inbound `Authorization` Bearer token. Run a real auth gateway in front of Tooltrim if you need cryptographic verification.
 
 ---
 
 ## CLI
 
 ```text
-leanmcp                       # start the proxy (default)
-leanmcp start                 # explicit
-leanmcp measure               # before/after token report; the README hero
-leanmcp validate-config       # parse + validate, no startup
-leanmcp validate-file <path>  # validate a JSON file against the schema
-leanmcp trace tail            # tail the NDJSON trace
+tooltrim                       # start the proxy (default)
+tooltrim start                 # explicit
+tooltrim measure               # before/after token report; the README hero
+tooltrim validate-config       # parse + validate, no startup
+tooltrim validate-file <path>  # validate a JSON file against the schema
+tooltrim trace tail            # tail the NDJSON trace
 ```
 
 All commands accept `-c, --config <path>`.

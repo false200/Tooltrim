@@ -37,7 +37,7 @@ export class DirectFanOutClient {
     return inst;
   }
 
-  /** List every upstream's tools, prefixed with `<id>.`. Same name-shape as LeanMCP. */
+  /** List every upstream's tools, prefixed with `<id>.`. Same name-shape as Tooltrim. */
   async listTools(): Promise<Tool[]> {
     const merged: Tool[] = [];
     for (const [id, client] of this.clients) {
@@ -82,7 +82,7 @@ async function connectStdio(spec: UpstreamSpec): Promise<Client> {
     stderr: "pipe",
   });
   const client = new Client(
-    { name: `leanmcp-bench-direct-${spec.id}`, version: "0.1.0" },
+    { name: `tooltrim-bench-direct-${spec.id}`, version: "0.1.0" },
     { capabilities: {} },
   );
   await client.connect(transport);

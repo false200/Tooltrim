@@ -68,16 +68,16 @@ function buildHeader(v: VersionsFile | null): string {
   const platform = v?.platform ?? `${process.platform}-${process.arch}`;
   const node = v?.node ?? process.version;
   return [
-    `# LeanMCP enterprise benchmark`,
+    `# Tooltrim enterprise benchmark`,
     ``,
     `> Five real MCP servers, one ~63-tool fan-out, a Claude Sonnet 4.5 agent loop,`,
-    `> and the same task run twice — once direct, once through \`LeanMCP\`.`,
+    `> and the same task run twice — once direct, once through \`Tooltrim\`.`,
     `> Numbers below come from \`pnpm bench\`; raw JSON is in \`bench/results/\`.`,
     ``,
     `- Run timestamp: \`${ts}\``,
     `- Platform: \`${platform}\``,
     `- Node: \`${node}\``,
-    `- LeanMCP: \`v0.1\``,
+    `- Tooltrim: \`v0.1\``,
   ].join("\n");
 }
 
@@ -119,7 +119,7 @@ function buildTLDR(parts: {
   if (a?.direct && a.proxy && a.delta) {
     const sign = a.delta.inputTokens >= 0 ? "−" : "+";
     lines.push(
-      `- **Real LLM money**: same Claude Sonnet 4.5 task = ${a.direct.inputTokens.toLocaleString("en-US")} input tokens direct vs ${a.proxy.inputTokens.toLocaleString("en-US")} through LeanMCP (**${sign}${Math.abs(a.delta.inputTokens).toLocaleString("en-US")}, ${a.delta.inputTokensPct.toFixed(1)}% cheaper**).`,
+      `- **Real LLM money**: same Claude Sonnet 4.5 task = ${a.direct.inputTokens.toLocaleString("en-US")} input tokens direct vs ${a.proxy.inputTokens.toLocaleString("en-US")} through Tooltrim (**${sign}${Math.abs(a.delta.inputTokens).toLocaleString("en-US")}, ${a.delta.inputTokensPct.toFixed(1)}% cheaper**).`,
     );
   } else if (a?.skippedReason) {
     lines.push(`- **Agent loop**: skipped — ${a.skippedReason}`);
@@ -131,7 +131,7 @@ function buildSetupSection(v: VersionsFile | null): string {
   const lines = [
     "## 1. Setup under test",
     "",
-    "Five MCP servers, all spawned over stdio, all reached through one `LeanMCP` Streamable HTTP inbound:",
+    "Five MCP servers, all spawned over stdio, all reached through one `Tooltrim` Streamable HTTP inbound:",
     "",
     "| Upstream | Package | Server name | Version | Tools | Initialize ms |",
     "| --- | --- | --- | --- | --- | --- |",
@@ -271,18 +271,18 @@ function buildAgentSection(a: AgentReport | null): string {
 
 async function buildEvidenceSection(): Promise<string> {
   const lines = ["## 6. Trace + metrics evidence", ""];
-  const tracePath = path.resolve(".leanmcp/trace.ndjson");
+  const tracePath = path.resolve(".tooltrim/trace.ndjson");
   try {
     await stat(tracePath);
     const raw = await readFile(tracePath, "utf8");
     const tail = raw.trim().split("\n").slice(-10);
-    lines.push("Last 10 lines of `.leanmcp/trace.ndjson`:");
+    lines.push("Last 10 lines of `.tooltrim/trace.ndjson`:");
     lines.push("");
     lines.push("```ndjson");
     lines.push(...tail);
     lines.push("```");
   } catch {
-    lines.push("_No `.leanmcp/trace.ndjson` found yet — run the benchmark first._");
+    lines.push("_No `.tooltrim/trace.ndjson` found yet — run the benchmark first._");
   }
   lines.push("");
   lines.push("Live `/metrics` excerpt scraped during the throughput phase:");
@@ -292,7 +292,7 @@ async function buildEvidenceSection(): Promise<string> {
     const raw = await readFile(metricsPath, "utf8");
     const trimmed = raw.trim().split("\n").slice(0, 25).join("\n");
     lines.push("```text");
-    lines.push(trimmed.length > 0 ? trimmed : "_(metrics endpoint returned no lean_mcp_* rows)_");
+    lines.push(trimmed.length > 0 ? trimmed : "_(metrics endpoint returned no tooltrim_* rows)_");
     lines.push("```");
   } catch {
     lines.push("_metrics-snapshot.txt missing — re-run `pnpm bench` to populate._");

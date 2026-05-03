@@ -1,5 +1,5 @@
 import micromatch from "micromatch";
-import type { LeanMcpConfig } from "../config/schema.js";
+import type { TooltrimConfig } from "../config/schema.js";
 
 export interface FilterOptions {
   allow: string[];
@@ -36,7 +36,7 @@ export class ToolFilter {
     this.applyPrompts = apply.prompts ?? true;
   }
 
-  static fromConfig(cfg: LeanMcpConfig): ToolFilter {
+  static fromConfig(cfg: TooltrimConfig): ToolFilter {
     return new ToolFilter({
       allow: cfg.filters.allow,
       deny: cfg.filters.deny,

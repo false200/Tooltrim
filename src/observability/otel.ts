@@ -1,4 +1,4 @@
-import type { LeanMcpConfig } from "../config/schema.js";
+import type { TooltrimConfig } from "../config/schema.js";
 import { child as childLogger } from "../logger.js";
 
 export interface OtelHandle {
@@ -9,7 +9,7 @@ export interface OtelHandle {
  * Lazy-init the OpenTelemetry SDK only when explicitly enabled.
  * Avoids loading the heavy OTel packages when the user just wants the proxy.
  */
-export async function startOtel(cfg: LeanMcpConfig): Promise<OtelHandle | null> {
+export async function startOtel(cfg: TooltrimConfig): Promise<OtelHandle | null> {
   const log = childLogger({ component: "otel" });
   const otelCfg = cfg.observability.metrics.otel;
   const endpoint = otelCfg.endpoint ?? process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
@@ -29,7 +29,7 @@ export async function startOtel(cfg: LeanMcpConfig): Promise<OtelHandle | null> 
 
     const sdk = new NodeSDK({
       resource: new Resource({
-        [ATTR_SERVICE_NAME]: "leanmcp",
+        [ATTR_SERVICE_NAME]: "tooltrim",
         [ATTR_SERVICE_VERSION]: "0.1.0",
       }),
       traceExporter: new OTLPTraceExporter({ url: `${endpoint.replace(/\/$/, "")}/v1/traces` }),

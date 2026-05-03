@@ -18,7 +18,7 @@
   "shrink": {
     "mode": "rules",
     "maxDescriptionChars": 50,
-    "cachePath": ".leanmcp/shrink-cache.json"
+    "cachePath": ".tooltrim/shrink-cache.json"
   },
   "observability": { "trace": { "sink": "off" } },
   "inbound": { "stdio": false, "http": { "enabled": false } },

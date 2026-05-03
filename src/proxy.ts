@@ -9,10 +9,10 @@ import { startOtel } from "./observability/otel.js";
 import { startStdioServer } from "./server/stdio.js";
 import { startHttpServer } from "./server/http.js";
 import { configureLogger, getLogger } from "./logger.js";
-import type { LeanMcpConfig } from "./config/schema.js";
+import type { TooltrimConfig } from "./config/schema.js";
 
 export interface RunProxyOptions {
-  cfg: LeanMcpConfig;
+  cfg: TooltrimConfig;
   /** Used by tests/the SDK to supply a non-stdio inbound. */
   disableInboundStdio?: boolean;
 }
@@ -81,7 +81,7 @@ export async function runProxy(opts: RunProxyOptions): Promise<ProxyHandle> {
       stdio: cfg.inbound.stdio,
       http: cfg.inbound.http.enabled,
     },
-    "LeanMCP proxy is running",
+    "Tooltrim proxy is running",
   );
 
   return {

@@ -1,6 +1,6 @@
-# LeanMCP in Docker
+# Tooltrim in Docker
 
-A self-contained way to run LeanMCP (`leanmcp` CLI) and the bench harness on any Linux
+A self-contained way to run Tooltrim (`tooltrim` CLI) and the bench harness on any Linux
 host without installing Node, pnpm, or any of the upstream MCP servers
 yourself. Useful for:
 
@@ -14,7 +14,7 @@ yourself. Useful for:
 ## Build
 
 ```bash
-docker build -t leanmcp:dev .
+docker build -t tooltrim:dev .
 ```
 
 The image is multi-stage (`node:20-bookworm-slim`):
@@ -27,7 +27,7 @@ The image is multi-stage (`node:20-bookworm-slim`):
 
 ## Run the proxy (default)
 
-The container's default command starts `leanmcp` against
+The container's default command starts `tooltrim` against
 [`examples/benchmark.docker.config.yaml`](../examples/benchmark.docker.config.yaml),
 which binds inbound HTTP on `0.0.0.0:8799` and Prometheus on `0.0.0.0:9464`
 inside the container.
@@ -37,7 +37,7 @@ docker run --rm -d --name mcpd \
   -p 127.0.0.1:8799:8799 \
   -p 127.0.0.1:9464:9464 \
   -e GITHUB_TOKEN=$GITHUB_TOKEN \
-  leanmcp:dev
+  tooltrim:dev
 
 # verify
 curl -fsS http://127.0.0.1:9464/metrics | head -5
@@ -54,7 +54,7 @@ docker stop mcpd
 
 The bench harness lives in `bench/` and reads
 [`examples/benchmark.config.yaml`](../examples/benchmark.config.yaml). It
-boots its own LeanMCP instance programmatically, so you don't need a
+boots its own Tooltrim instance programmatically, so you don't need a
 separate proxy container running.
 
 ```bash
@@ -64,7 +64,7 @@ mkdir -p bench/results
 docker run --rm \
   -e GITHUB_TOKEN=$GITHUB_TOKEN \
   -v "$PWD/bench/results:/app/bench/results" \
-  leanmcp:dev \
+  tooltrim:dev \
   pnpm bench --skip-agent
 
 # full: includes the Claude Sonnet 4.5 agent loop (~$0.05–$0.20 per run)
@@ -73,7 +73,7 @@ docker run --rm \
   -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
   -v "$PWD/bench/results:/app/bench/results" \
   -v "$PWD/bench:/app/bench" \
-  leanmcp:dev \
+  tooltrim:dev \
   pnpm bench
 ```
 
@@ -90,7 +90,7 @@ then forward the port from your dev machine. No public exposure required.
 docker run --rm -d --name mcpd \
   -p 127.0.0.1:8799:8799 -p 127.0.0.1:9464:9464 \
   -e GITHUB_TOKEN=$GITHUB_TOKEN \
-  leanmcp:dev
+  tooltrim:dev
 
 # on your dev machine
 ssh -N -L 8799:127.0.0.1:8799 user@LINUX_HOST
@@ -115,7 +115,7 @@ want them to target the containerized proxy directly.
 
 ## Image hygiene
 
-- The `.dockerignore` excludes `node_modules`, `dist`, `.leanmcp`, local
+- The `.dockerignore` excludes `node_modules`, `dist`, `.tooltrim`, local
   bench results and reports, and any `.env*` files — secrets never end up in
   a layer.
 - `dumb-init` is PID 1 so the upstream `npx` children get reaped when the

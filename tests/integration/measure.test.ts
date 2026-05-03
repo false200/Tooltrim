@@ -13,12 +13,12 @@ const tsxCli = requireFromHere.resolve("tsx/cli");
 const cliEntry = path.resolve(root, "src", "cli.ts");
 const echoStdio = path.resolve(root, "tests", "fixtures", "echo-mcp-server", "stdio.ts");
 
-describe("leanmcp measure", () => {
+describe("tooltrim measure", () => {
   it(
     "prints a non-zero token-savings table for a real upstream",
     async () => {
-      const dir = await mkdtemp(path.join(tmpdir(), "leanmcp-"));
-      const cfgPath = path.join(dir, "leanmcp.config.json");
+      const dir = await mkdtemp(path.join(tmpdir(), "tooltrim-"));
+      const cfgPath = path.join(dir, "tooltrim.config.json");
       const cfg = {
         servers: {
           a: {

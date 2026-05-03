@@ -1,4 +1,4 @@
-# LeanMCP benchmark config
+# Tooltrim benchmark config
 #
 # This is the proxy config the bench harness boots before running each phase.
 # Five real upstream MCP servers; HTTP inbound only so the bench harness can
@@ -40,7 +40,7 @@ servers:
       GITHUB_PERSONAL_ACCESS_TOKEN: "${GITHUB_TOKEN}"
 
 # The bench overrides the filter at runtime by mutating the loaded config; the
-# values below are the "common" scenario used for regular `leanmcp start`.
+# values below are the "common" scenario used for regular `tooltrim start`.
 filters:
   allow:
     - "everything.*"
@@ -58,7 +58,7 @@ shrink:
   mode: rules
   maxDescriptionChars: 160
   dedupeSchemas: true
-  cachePath: .leanmcp/shrink-cache.json
+  cachePath: .tooltrim/shrink-cache.json
 
 inbound:
   stdio: false
@@ -72,7 +72,7 @@ inbound:
 observability:
   trace:
     sink: file
-    path: .leanmcp/trace.ndjson
+    path: .tooltrim/trace.ndjson
   metrics:
     prometheus:
       enabled: true
@@ -80,7 +80,7 @@ observability:
       port: 9464
   audit:
     enabled: true
-    path: .leanmcp/audit.ndjson
+    path: .tooltrim/audit.ndjson
 
 policy:
   defaultAuth: none

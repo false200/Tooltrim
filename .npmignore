@@ -9,4 +9,4 @@ vitest.config.ts
 .eslintrc*
 .prettierrc*
 coverage/
-.leanmcp/
+.tooltrim/
