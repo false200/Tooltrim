@@ -16,6 +16,6 @@ export default defineConfig({
   treeshake: true,
   minify: false,
   banner: {
-    js: "// Tooltrim — MCP proxy. https://github.com/false200/LeanMCP",
+    js: "// Tooltrim — MCP proxy. https://github.com/false200/tooltrim",
   },
 });
