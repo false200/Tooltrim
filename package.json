@@ -1,6 +1,6 @@
 {
   "name": "tooltrim",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Tooltrim — an open-source MCP proxy: aggregate N MCP servers, filter and shrink tool descriptions, and trace every call.",
   "keywords": [
     "mcp",
