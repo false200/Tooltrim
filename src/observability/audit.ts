@@ -24,6 +24,8 @@ export class AuditLogger {
   private readonly enabled: boolean;
   private readonly filePath: string;
   private dirEnsured = false;
+  /** Serializes appendFile calls to prevent interleaved NDJSON lines. */
+  private writeQueue = Promise.resolve();
 
   constructor(enabled: boolean, filePath: string) {
     this.enabled = enabled;
@@ -41,6 +43,10 @@ export class AuditLogger {
       this.dirEnsured = true;
     }
     const line = JSON.stringify({ ts: new Date().toISOString(), ...ev });
-    await appendFile(this.filePath, line + "\n", "utf8");
+    // Serialize writes to prevent interleaving under concurrent requests.
+    this.writeQueue = this.writeQueue.then(() =>
+      appendFile(this.filePath, line + "\n", "utf8"),
+    );
+    return this.writeQueue;
   }
 }

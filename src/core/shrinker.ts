@@ -180,10 +180,10 @@ export class Shrinker {
       .join(" ");
     s = s.replace(/\s+/g, " ").trim();
 
-    // 6. capitalise first letter for readability
+    // 8. capitalise first letter for readability
     if (s.length > 0) s = s[0]!.toUpperCase() + s.slice(1);
 
-    // 7. truncate at the first sentence boundary past `maxChars`
+    // 9. truncate at the first sentence boundary past `maxChars`
     if (s.length > maxChars) {
       const sliceEnd = this.findSentenceEnd(s, maxChars);
       s = s.slice(0, sliceEnd).trimEnd();

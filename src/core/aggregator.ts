@@ -54,6 +54,9 @@ export class Aggregator {
   private readonly promptRoute = new Map<string, { upstreamId: string; original: string }>();
   /** uri -> upstreamId for resources (URIs are unique upstream-side; we keep first wins on collision). */
   private readonly resourceRoute = new Map<string, string>();
+  /** Short-lived cache for collectTools() to debounce redundant fan-out. */
+  private toolsCache: { tools: unknown[]; ts: number } | null = null;
+  private readonly TOOLS_CACHE_TTL_MS = 2000;
 
   constructor(deps: AggregatorDeps) {
     this.deps = deps;
@@ -210,12 +213,24 @@ export class Aggregator {
    * and return the merged list.
    */
   async collectTools(): Promise<unknown[]> {
+    // Return cached result if fresh enough to avoid redundant upstream fan-out.
+    if (this.toolsCache && Date.now() - this.toolsCache.ts < this.TOOLS_CACHE_TTL_MS) {
+      return this.toolsCache.tools;
+    }
+
     this.toolRoute.clear();
     const out: Record<string, unknown>[] = [];
+    const timeoutMs = this.deps.cfg.upstreamTimeoutMs ?? 30_000;
+
     for (const [id, conn] of this.deps.upstream.connections) {
       if (conn.status !== "connected" || !conn.capabilities?.tools) continue;
       try {
-        const result = await conn.client.listTools();
+        const result = await Promise.race([
+          conn.client.listTools(),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`upstream \"${id}\" tools/list timed out after ${timeoutMs}ms`)), timeoutMs),
+          ),
+        ]);
         for (const t of result.tools ?? []) {
           const namespaced = this.namespace(id, t.name);
           if (!this.deps.filter.isAllowed(namespaced, "tool")) continue;
@@ -249,6 +264,7 @@ export class Aggregator {
         this.log.warn({ id, err: errMsg(err) }, "upstream tools/list failed");
       }
     }
+    this.toolsCache = { tools: out, ts: Date.now() };
     return out;
   }
 
