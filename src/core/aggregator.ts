@@ -224,8 +224,8 @@ export class Aggregator {
 
     for (const [id, conn] of this.deps.upstream.connections) {
       if (conn.status !== "connected" || !conn.capabilities?.tools) continue;
+      let timer: ReturnType<typeof setTimeout> | undefined;
       try {
-        let timer: ReturnType<typeof setTimeout>;
         const timeout = new Promise<never>((_, reject) => {
           timer = setTimeout(() => reject(new Error(`upstream "${id}" tools/list timed out after ${timeoutMs}ms`)), timeoutMs);
         });
