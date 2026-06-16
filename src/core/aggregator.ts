@@ -225,12 +225,12 @@ export class Aggregator {
     for (const [id, conn] of this.deps.upstream.connections) {
       if (conn.status !== "connected" || !conn.capabilities?.tools) continue;
       try {
-        const result = await Promise.race([
-          conn.client.listTools(),
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error(`upstream \"${id}\" tools/list timed out after ${timeoutMs}ms`)), timeoutMs),
-          ),
-        ]);
+        let timer: ReturnType<typeof setTimeout>;
+        const timeout = new Promise<never>((_, reject) => {
+          timer = setTimeout(() => reject(new Error(`upstream "${id}" tools/list timed out after ${timeoutMs}ms`)), timeoutMs);
+        });
+        const result = await Promise.race([conn.client.listTools(), timeout]);
+        clearTimeout(timer);
         for (const t of result.tools ?? []) {
           const namespaced = this.namespace(id, t.name);
           if (!this.deps.filter.isAllowed(namespaced, "tool")) continue;
@@ -261,6 +261,7 @@ export class Aggregator {
           });
         }
       } catch (err) {
+        clearTimeout(timer);
         this.log.warn({ id, err: errMsg(err) }, "upstream tools/list failed");
       }
     }

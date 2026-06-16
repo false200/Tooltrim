@@ -146,7 +146,7 @@ export const tooltrimConfigSchema = z.object({
   observability: observabilitySchema,
   policy: policySchema,
   logLevel: z.enum(["trace", "debug", "info", "warn", "error", "fatal", "silent"]).default("info"),
-  /** Timeout in ms for upstream listTools/listResources/listPrompts calls (default 30s). */
+  /** Timeout in ms for upstream listTools calls (default 30s). */
   upstreamTimeoutMs: z.number().int().min(1000).default(30_000),
 });
 

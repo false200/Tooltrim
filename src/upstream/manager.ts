@@ -171,7 +171,7 @@ export class UpstreamManager {
         stderrBytesThisMinute = 0;
         stderrMinuteStart = now;
       }
-      if (stderrBytesThisMinute < stderrBudget) {
+      if (stderrBudget === 0 || stderrBytesThisMinute < stderrBudget) {
         this.log.debug({ id, chunk: chunk.toString("utf8").trim() }, "upstream stderr");
         stderrBytesThisMinute += chunk.length;
       }
