@@ -161,8 +161,20 @@ export class UpstreamManager {
       cwd: cfg.cwd,
       stderr: "pipe",
     });
+    let stderrBytesThisMinute = 0;
+    let stderrMinuteStart = Date.now();
+    const stderrBudget = cfg.stderrLogBytesPerMinute ?? 10_000;
+
     transport.stderr?.on("data", (chunk: Buffer) => {
-      this.log.debug({ id, chunk: chunk.toString("utf8").trim() }, "upstream stderr");
+      const now = Date.now();
+      if (now - stderrMinuteStart > 60_000) {
+        stderrBytesThisMinute = 0;
+        stderrMinuteStart = now;
+      }
+      if (stderrBudget === 0 || stderrBytesThisMinute < stderrBudget) {
+        this.log.debug({ id, chunk: chunk.toString("utf8").trim() }, "upstream stderr");
+        stderrBytesThisMinute += chunk.length;
+      }
     });
     await client.connect(transport);
   }

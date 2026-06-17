@@ -9,6 +9,8 @@ const stdioServerSchema = z.object({
   maxRestarts: z.number().int().min(0).default(5),
   /** Initial backoff in ms, doubles up to 30s. */
   restartBackoffMs: z.number().int().min(0).default(500),
+  /** Per-upstream stderr log budget in bytes per minute (0 = unlimited). */
+  stderrLogBytesPerMinute: z.number().int().min(0).default(10_000),
   /** Per-server description-shrink override. */
   shrink: z
     .object({
@@ -144,6 +146,8 @@ export const tooltrimConfigSchema = z.object({
   observability: observabilitySchema,
   policy: policySchema,
   logLevel: z.enum(["trace", "debug", "info", "warn", "error", "fatal", "silent"]).default("info"),
+  /** Timeout in ms for upstream listTools calls (default 30s). */
+  upstreamTimeoutMs: z.number().int().min(1000).default(30_000),
 });
 
 export type StdioServerConfig = z.infer<typeof stdioServerSchema>;

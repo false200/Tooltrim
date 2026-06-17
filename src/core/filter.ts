@@ -26,6 +26,9 @@ export class ToolFilter {
   private readonly applyTools: boolean;
   private readonly applyResources: boolean;
   private readonly applyPrompts: boolean;
+  /** Pre-compiled matchers for batch glob evaluation. */
+  private readonly allowMatcher: ((name: string) => boolean) | null;
+  private readonly denyMatcher: ((name: string) => boolean) | null;
 
   constructor(opts: FilterOptions) {
     this.allow = opts.allow;
@@ -34,6 +37,8 @@ export class ToolFilter {
     this.applyTools = apply.tools ?? true;
     this.applyResources = apply.resources ?? true;
     this.applyPrompts = apply.prompts ?? true;
+    this.allowMatcher = this.allow.length > 0 ? micromatch.matcher(this.allow) : null;
+    this.denyMatcher = this.deny.length > 0 ? micromatch.matcher(this.deny) : null;
   }
 
   static fromConfig(cfg: TooltrimConfig): ToolFilter {
@@ -49,10 +54,10 @@ export class ToolFilter {
     if (kind === "resource" && !this.applyResources) return true;
     if (kind === "prompt" && !this.applyPrompts) return true;
 
-    if (this.allow.length > 0 && !micromatch.isMatch(namespacedName, this.allow)) {
+    if (this.allowMatcher && !this.allowMatcher(namespacedName)) {
       return false;
     }
-    if (this.deny.length > 0 && micromatch.isMatch(namespacedName, this.deny)) {
+    if (this.denyMatcher && this.denyMatcher(namespacedName)) {
       return false;
     }
     return true;
