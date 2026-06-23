@@ -8,8 +8,6 @@ Drop-in [MCP](https://modelcontextprotocol.io) proxy. Aggregate upstream servers
 
 `tooltrim` on npm sits in front of your MCP servers so the agent sees one smaller tool catalog instead of every definition from every server.
 
-Not affiliated with Anthropic, the MCP spec authors, or upstream MCP server projects. Contributions welcome via pull request.
-
 ---
 
 ## Features
