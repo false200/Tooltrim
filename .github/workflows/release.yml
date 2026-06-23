@@ -4,6 +4,11 @@ on:
   push:
     tags:
       - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to release (e.g. v0.1.2)"
+        required: true
 
 permissions:
   contents: write
@@ -14,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
 
       - uses: pnpm/action-setup@v4
         with:
@@ -36,7 +43,12 @@ jobs:
       - name: Verify package version matches tag
         run: |
           PKG_VERSION=$(node -p "require('./package.json').version")
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG_VERSION="${{ inputs.tag }}"
+            TAG_VERSION="${TAG_VERSION#v}"
+          else
+            TAG_VERSION="${GITHUB_REF_NAME#v}"
+          fi
           if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
             echo "package.json version ($PKG_VERSION) does not match tag ($TAG_VERSION)"
             exit 1
@@ -45,4 +57,5 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
           generate_release_notes: true
