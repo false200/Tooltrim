@@ -1,0 +1,48 @@
+# Synced to GitHub via .github/workflows/labels.yml
+- name: bug
+  color: d73a4a
+  description: Something isn't working
+
+- name: enhancement
+  color: a2eeef
+  description: New feature or improvement
+
+- name: documentation
+  color: 0075ca
+  description: Docs, README, or examples
+
+- name: good first issue
+  color: 7057ff
+  description: Good for newcomers
+
+- name: help wanted
+  color: 008672
+  description: Extra attention or skill needed
+
+- name: question
+  color: d876e3
+  description: Question or support request
+
+- name: triage
+  color: fbca04
+  description: Needs maintainer review or reproduction
+
+- name: performance
+  color: f9d0c4
+  description: Speed, memory, or token savings
+
+- name: security
+  color: b60205
+  description: Security-related issue or fix
+
+- name: dependencies
+  color: 0366d6
+  description: Dependency updates
+
+- name: upstream
+  color: c5def5
+  description: Upstream MCP server or SDK behavior
+
+- name: wontfix
+  color: ffffff
+  description: Will not be addressed

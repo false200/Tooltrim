@@ -1,0 +1,17 @@
+name: Question
+description: Ask how something works
+title: "[Question]: "
+labels: ["question"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: MCP client, Node version, transport (stdio/HTTP), etc.
