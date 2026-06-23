@@ -42,9 +42,18 @@ Conventional commits are nice but not enforced. A short imperative summary is fi
 
 ## Releasing (maintainers)
 
-1. Bump `version` in `package.json`.
-2. Push a `vX.Y.Z` tag.
-3. The `release.yml` workflow runs the tests and publishes to npm.
+1. Bump `version` in `package.json` and commit to `main`.
+2. Push a `vX.Y.Z` tag — CI runs tests and creates the [GitHub Release](https://github.com/false200/Tooltrim/releases).
+3. Publish to npm locally (not from CI):
+
+```bash
+pnpm install
+pnpm test
+pnpm build
+pnpm publish --access public
+```
+
+You must be logged in to npm (`npm login`) and own the `tooltrim` package.
 
 ## Reporting issues
 
