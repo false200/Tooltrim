@@ -4,29 +4,24 @@
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org)
 
-⚡ **Drop-in [MCP](https://modelcontextprotocol.io) proxy** — aggregate N upstream servers into one endpoint, filter and shrink the tool list, trace every call, and measure tokens saved.
+Drop-in [MCP](https://modelcontextprotocol.io) proxy. Aggregate upstream servers into one endpoint, filter and shrink the tool list, trace calls, and measure token savings.
 
-**Tooltrim** (`tooltrim` on npm) sits in front of your MCP servers so your agent sees one smaller tool catalog instead of every definition from every server.
+`tooltrim` on npm sits in front of your MCP servers so the agent sees one smaller tool catalog instead of every definition from every server.
 
-*Disclaimer: not affiliated with Anthropic, the MCP spec authors, or any upstream MCP server project.*
+Not affiliated with Anthropic, the MCP spec authors, or upstream MCP server projects.
 
 ---
 
-## ⚡ Features
+## Features
 
-**`tooltrim`** — One MCP entry in your editor instead of five. Fans out to every upstream in your config.
+- **Proxy** — one MCP entry in your editor; fans out to every upstream in config
+- **Measure** — before/after token table from your real config (`tooltrim measure`)
+- **Filters** — allow/deny globs on namespaced tools; enforced on list and call
+- **Shrinker** — trims descriptions and dedupes JSON Schema deterministically
+- **Tracing** — JSON-RPC frames as NDJSON (`.tooltrim/trace.ndjson`)
+- **Metrics** — Prometheus and OpenTelemetry
 
-**`tooltrim measure`** — Wondering if this is worth it? Prints a before/after token table from your real config.
-
-**Glob filters** — `github.*` yes, `github.delete_*` no. Same rules on list *and* call, so denied tools stay denied.
-
-**Deterministic shrinker** — Trims bloated descriptions and dedupes JSON-Schema. Same input → same bytes, every time.
-
-**NDJSON tracing** — Every JSON-RPC frame logged. Finally see what your agent is actually doing.
-
-**Prometheus + OpenTelemetry** — Metrics, traces, and audit hooks for production deployments.
-
-And the numbers (5 official `@modelcontextprotocol/*` servers, reproducible in [`bench/REPORT.md`](bench/REPORT.md)):
+Benchmarks against five official `@modelcontextprotocol/*` servers ([`bench/REPORT.md`](bench/REPORT.md)):
 
 ```text
 Scenario                Tools  Tokens  vs raw
@@ -39,21 +34,21 @@ task   (filter+shrink)      3     656  −93.7%
 
 ## Table of Contents
 
-- [⚡ Features](#-features)
-- [📦 Installation](#-installation)
-- [🧪 Usage](#-usage)
-- [⚙️ Configuration](#️-configuration)
-- [🛠️ Requirements](#️-requirements)
-- [📁 Repo & Contributions](#-repo--contributions)
-- [📄 License](#-license)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Requirements](#requirements)
+- [Repo and contributions](#repo-and-contributions)
+- [License](#license)
 
-⸻
+---
 
-## 📦 Installation
+## Installation
 
-### npx (recommended for editors)
+### npx (editors)
 
-No install. Point Cursor / Claude Desktop / Codex at:
+Point Cursor, Claude Desktop, or Codex at:
 
 ```json
 {
@@ -66,16 +61,16 @@ No install. Point Cursor / Claude Desktop / Codex at:
 }
 ```
 
-Use your **project root** (folder with `tooltrim.config.yaml`) as the working directory.
+Use the project root (directory containing `tooltrim.config.yaml`) as the working directory.
 
 ### npm
 
 ```bash
-npm install -g tooltrim    # global CLI on your PATH
-npm install tooltrim       # local dep — copy examples from node_modules
+npm install -g tooltrim
+npm install tooltrim
 ```
 
-Also: `pnpm add tooltrim`, `yarn add tooltrim`.
+Also `pnpm add tooltrim` and `yarn add tooltrim`.
 
 ### Docker
 
@@ -83,21 +78,20 @@ Also: `pnpm add tooltrim`, `yarn add tooltrim`.
 docker build -t tooltrim .
 ```
 
-See [`docs/DOCKER.md`](docs/DOCKER.md) for run flags and benchmark mounts.
+See [`docs/DOCKER.md`](docs/DOCKER.md).
 
-⸻
+---
 
-## 🧪 Usage
+## Usage
 
 ### Start the proxy
 
 ```bash
 npx -y tooltrim
-# or
 tooltrim start --config tooltrim.config.yaml
 ```
 
-Reads `tooltrim.config.yaml` from the current directory (or pass `--config`). Fans out to all upstreams and exposes one merged MCP endpoint.
+Loads `tooltrim.config.yaml` from the current directory unless `--config` is set.
 
 ### Measure token savings
 
@@ -105,42 +99,34 @@ Reads `tooltrim.config.yaml` from the current directory (or pass `--config`). Fa
 npx -y tooltrim measure --config tooltrim.config.yaml
 ```
 
-Connects to your upstreams, lists tools raw vs filtered vs shrunk, and prints a token/byte table. This is how the README hero numbers are produced.
-
 ### Validate config
 
 ```bash
 npx -y tooltrim validate-config
 ```
 
-Parses and validates your config, redacts secrets, prints JSON. Run this before opening an issue.
+Redacts secrets. Useful before filing issues.
 
-### Tail the trace log
+### Tail trace log
 
 ```bash
 tooltrim trace tail
-tooltrim trace tail --no-pretty   # pipe to jq / Loki / Datadog
+tooltrim trace tail --no-pretty
 ```
 
-### Point your editor at Tooltrim
+### Editor setup
 
-1. Copy the example config:
+1. Copy `examples/tooltrim.config.yaml` to your project root
+2. Edit `servers`
+3. Add the npx stdio config above to your MCP client
 
-```bash
-cp node_modules/tooltrim/examples/tooltrim.config.yaml ./tooltrim.config.yaml
-# or grab it from this repo: examples/tooltrim.config.yaml
-```
+Replace per-server MCP entries with this single proxy entry.
 
-2. Edit `servers:` for your MCPs.
-3. Add the `npx -y tooltrim` stdio entry above to your MCP client config.
+---
 
-Replace per-server MCP entries with this single one.
+## Configuration
 
-⸻
-
-## ⚙️ Configuration
-
-Minimal example — full reference in [`examples/tooltrim.config.yaml`](examples/tooltrim.config.yaml).
+Full example in [`examples/tooltrim.config.yaml`](examples/tooltrim.config.yaml).
 
 ```yaml
 servers:
@@ -174,32 +160,30 @@ observability:
   metrics: { prometheus: { enabled: true, port: 9464 } }
 ```
 
-**Filtering** — globs match the namespaced name `<server>.<tool>`. Empty `allow` = everything; non-empty `allow` = gate; `deny` always wins.
+Globs match `<server>.<tool>`. Empty `allow` permits all; `deny` wins over `allow`.
 
-**Config search paths** — `tooltrim.config.yaml`, `.tooltrim.json`, `"tooltrim"` key in `package.json`, or `--config <path>`.
+Config search paths include `tooltrim.config.yaml`, `.tooltrim.json`, and a `"tooltrim"` key in `package.json`. `${VAR}` expands from the environment.
 
-`${VAR}` in any string is expanded from the environment.
+---
 
-⸻
+## Requirements
 
-## 🛠️ Requirements
+- Node.js 20+
+- npx (for editor stdio transport)
+- Upstream MCP servers via stdio or HTTP
 
-- **Node.js 20+**
-- **npx** (bundled with Node) for editor stdio transport
-- Upstream MCP servers reachable via stdio spawn or HTTP URL
+---
 
-⸻
+## Repo and contributions
 
-## 📁 Repo & Contributions
+- Repo — https://github.com/false200/Tooltrim
+- npm — https://www.npmjs.com/package/tooltrim
+- Benchmarks — [`bench/REPORT.md`](bench/REPORT.md)
 
-🛠️ **Repo:** https://github.com/false200/Tooltrim  
-📦 **npm:** https://www.npmjs.com/package/tooltrim  
-📊 **Benchmarks:** [`bench/REPORT.md`](bench/REPORT.md)
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Bug reports with `tooltrim validate-config` output are gold.
+---
 
-⸻
-
-## 📄 License
+## License
 
 [MIT](LICENSE)
