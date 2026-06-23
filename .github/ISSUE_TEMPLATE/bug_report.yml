@@ -1,0 +1,44 @@
+name: Bug report
+description: Something isn't working
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Include version and a redacted config if you can (`npx -y tooltrim validate-config`).
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Tooltrim version
+      placeholder: "0.1.2"
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Config (redacted)
+      description: Paste output of `tooltrim validate-config` or a trimmed `tooltrim.config.yaml`
+      render: yaml
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or trace lines
+      description: A few lines from `.tooltrim/trace.ndjson` if helpful
