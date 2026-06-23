@@ -32,18 +32,19 @@ async function startHarness(opts: {
   servers: Record<string, ReturnType<typeof echoStdioConfig>>;
   filters?: { allow?: string[]; deny?: string[] };
   shrink?: { mode?: "off" | "rules" | "llm" };
-  port?: number;
 }): Promise<ProxyHarness> {
-  const port = opts.port ?? randomPort();
   const cfg = buildTestConfig({
     servers: opts.servers,
     filters: opts.filters,
     shrink: opts.shrink,
     inboundHttp: true,
   });
-  cfg.inbound.http.port = port;
+  // Port 0 → OS picks a free port. Random high ports flake on Windows CI (EACCES).
+  cfg.inbound.http.port = 0;
   cfg.inbound.http.host = "127.0.0.1";
   const handle = await runProxy({ cfg, disableInboundStdio: true });
+  const port = handle.httpPort;
+  if (!port) throw new Error("proxy HTTP port not available");
 
   const url = `http://127.0.0.1:${port}/mcp`;
   const client = new Client({ name: "test-client", version: "0.0.1" }, { capabilities: {} });
@@ -55,11 +56,7 @@ async function startHarness(opts: {
   return harness;
 }
 
-function randomPort(): number {
-  return 30_000 + Math.floor(Math.random() * 20_000);
-}
-
-describe("end-to-end proxy", () => {
+describe.sequential("end-to-end proxy", () => {
   it(
     "merges tool lists from two upstream stdio servers under namespaced names",
     async () => {

@@ -9,6 +9,8 @@ import { child as childLogger } from "../logger.js";
 
 export interface InboundHttpHandle {
   close: () => Promise<void>;
+  /** Actual bound port (useful when config port is 0). */
+  port: number;
 }
 
 /**
@@ -29,7 +31,9 @@ export async function startHttpServer(args: {
 }): Promise<InboundHttpHandle> {
   const { cfg, createServer: createMcp, upstream } = args;
   const log = childLogger({ component: "inbound-http" });
-  const { host, port, path: mcpPath, sessions } = cfg.inbound.http;
+  const { host, path: mcpPath, sessions } = cfg.inbound.http;
+  const requestedPort = cfg.inbound.http.port;
+  let boundPort = requestedPort;
 
   if (sessions !== "stateless") {
     log.warn(
@@ -39,7 +43,7 @@ export async function startHttpServer(args: {
   }
 
   const handler = async (req: IncomingMessage, res: ServerResponse) => {
-    const url = new URL(req.url ?? "/", `http://${host}:${port}`);
+    const url = new URL(req.url ?? "/", `http://${host}:${boundPort}`);
 
     if (url.pathname === "/healthz") {
       const upstreams = [...upstream.connections.values()].map((c) => ({
@@ -101,14 +105,19 @@ export async function startHttpServer(args: {
 
   await new Promise<void>((resolve, reject) => {
     httpServer.once("error", reject);
-    httpServer.listen(port, host, () => {
+    httpServer.listen(requestedPort, host, () => {
       httpServer.off("error", reject);
+      const addr = httpServer.address();
+      if (addr && typeof addr === "object") {
+        boundPort = addr.port;
+      }
       resolve();
     });
   });
-  log.info({ host, port, path: mcpPath, sessions }, "inbound HTTP transport listening");
+  log.info({ host, port: boundPort, path: mcpPath, sessions }, "inbound HTTP transport listening");
 
   return {
+    port: boundPort,
     close: () =>
       new Promise<void>((resolve) => {
         httpServer.close(() => resolve());
