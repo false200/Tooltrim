@@ -2,7 +2,7 @@
 
 Thanks for your interest! Tooltrim is a small project; a quick PR is usually faster than a long discussion.
 
-New here? Open an issue or jump straight to a PR — either is welcome.
+New here? Open an issue or jump straight to a PR — either is welcome. See [open issues](https://github.com/false200/Tooltrim/issues) for `good first issue` ideas.
 
 ## Local setup
 
