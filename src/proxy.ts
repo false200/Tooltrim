@@ -19,6 +19,8 @@ export interface RunProxyOptions {
 
 export interface ProxyHandle {
   close: () => Promise<void>;
+  /** Set when inbound HTTP is enabled; actual bound port (config port 0 → OS-assigned). */
+  httpPort?: number;
 }
 
 export async function runProxy(opts: RunProxyOptions): Promise<ProxyHandle> {
@@ -65,6 +67,7 @@ export async function runProxy(opts: RunProxyOptions): Promise<ProxyHandle> {
     const handle = await startStdioServer(aggregator.createServer());
     closers.push(handle.close);
   }
+  let httpPort: number | undefined;
   if (cfg.inbound.http.enabled) {
     const handle = await startHttpServer({
       cfg,
@@ -72,6 +75,7 @@ export async function runProxy(opts: RunProxyOptions): Promise<ProxyHandle> {
       upstream,
       audit,
     });
+    httpPort = handle.port;
     closers.push(handle.close);
   }
 
@@ -85,6 +89,7 @@ export async function runProxy(opts: RunProxyOptions): Promise<ProxyHandle> {
   );
 
   return {
+    httpPort,
     close: async () => {
       for (const c of [...closers].reverse()) {
         try {
